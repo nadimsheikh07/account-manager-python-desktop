@@ -15,9 +15,6 @@ DB_FILE = "users.db"
 
 class LoginForm(QWidget):
     def __init__(self, on_login_success):
-        """
-        on_login_success: callback function to call when login is successful
-        """
         super().__init__()
         self.on_login_success = on_login_success
         self.setWindowTitle("Login")
@@ -51,7 +48,6 @@ class LoginForm(QWidget):
         self.login_button.clicked.connect(self.handle_login)
         self.login_button.setEnabled(False)
 
-        # Layout
         layout = QVBoxLayout()
         layout.addLayout(grid)
         layout.addStretch()
@@ -71,8 +67,9 @@ class LoginForm(QWidget):
         password = self.password_input.text().strip()
 
         if self.authenticate_user(username, password):
+            self.create_session(username)  # create session
             QMessageBox.information(self, "Login", "Login successful!")
-            self.on_login_success()  # call the main app
+            self.on_login_success()
             self.close()
         else:
             QMessageBox.warning(self, "Login Failed", "Invalid username or password.")
@@ -90,3 +87,13 @@ class LoginForm(QWidget):
         user = cursor.fetchone()
         conn.close()
         return bool(user)
+
+    def create_session(self, username):
+        """Store current logged-in user in session table"""
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS session (username TEXT UNIQUE)")
+        cursor.execute("DELETE FROM session")  # remove old session
+        cursor.execute("INSERT INTO session (username) VALUES (?)", (username,))
+        conn.commit()
+        conn.close()
