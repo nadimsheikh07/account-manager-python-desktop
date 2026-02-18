@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import (
     QFrame,
 )
 from PyQt6.QtCore import Qt
-
 from pages.auth.login import LoginForm
 from pages.customer.customerList import CustomerList
 from pages.customer.customerForm import CustomerForm
@@ -18,7 +17,7 @@ class MainApp(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Main App")
-    
+
         self.init_ui()
         # Open maximized
         self.showMaximized()
@@ -31,16 +30,27 @@ class MainApp(QWidget):
         self.sidebar.setFixedWidth(200)
         self.sidebar.setStyleSheet(
             """
-            QFrame { background-color: #2c3e50; }
-            QPushButton {
-                background-color: transparent;
-                color: white;
-                padding: 10px;
-                text-align: left;
-                border: none;
-            }
-            QPushButton:hover { background-color: #34495e; }
-        """
+    QFrame { 
+        background-color: #2c3e50; 
+    }
+
+    QPushButton {
+        background-color: transparent;
+        color: white;
+        padding: 10px;
+        text-align: left;
+        border: none;
+    }
+
+    QPushButton:hover {
+        background-color: #34495e;
+    }
+
+    QPushButton[active="true"] {
+        background-color: #1abc9c;
+        font-weight: bold;
+    }
+"""
         )
 
         sidebar_layout = QVBoxLayout()
@@ -77,6 +87,18 @@ class MainApp(QWidget):
     # Utility
     # =====================
 
+    def set_active_menu(self, button):
+        # Reset all buttons
+        for btn in [self.dashboard_btn, self.customer_btn]:
+            btn.setProperty("active", False)
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+
+        # Activate selected button
+        button.setProperty("active", True)
+        button.style().unpolish(button)
+        button.style().polish(button)
+
     def clear_content(self):
         while self.content_layout.count():
             child = self.content_layout.takeAt(0)
@@ -89,12 +111,14 @@ class MainApp(QWidget):
 
     def show_dashboard(self):
         self.clear_content()
+        self.set_active_menu(self.dashboard_btn)
         label = QLabel("Welcome! You are logged in.")
         label.setStyleSheet("font-size: 18px;")
         self.content_layout.addWidget(label)
 
     def show_customers(self):
         self.clear_content()
+        self.set_active_menu(self.customer_btn)
 
         self.customer_page = CustomerList(on_edit_callback=self.open_edit_customer)
 
