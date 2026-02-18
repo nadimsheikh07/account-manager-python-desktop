@@ -1,29 +1,111 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton
+from PyQt6.QtWidgets import (
+    QWidget,
+    QLabel,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QFrame,
+)
+from PyQt6.QtCore import Qt
+
 from pages.auth.login import LoginForm
 from services.auth import logout
+
 
 class MainApp(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Main App")
-        self.setGeometry(200, 200, 400, 300)
+        self.setGeometry(200, 200, 900, 500)
 
         self.init_ui()
 
-        # Hide main window initially
-        self.hide()
-
     def init_ui(self):
-        layout = QVBoxLayout()
+        main_layout = QHBoxLayout(self)
 
-        self.label = QLabel("Welcome! You are logged in.")
-        layout.addWidget(self.label)
+        # =====================
+        # Sidebar
+        # =====================
+        self.sidebar = QFrame()
+        self.sidebar.setFixedWidth(200)
+        self.sidebar.setStyleSheet(
+            """
+            QFrame {
+                background-color: #2c3e50;
+            }
+            QPushButton {
+                background-color: transparent;
+                color: white;
+                padding: 10px;
+                text-align: left;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #34495e;
+            }
+        """
+        )
 
+        sidebar_layout = QVBoxLayout()
+        sidebar_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # Menu Buttons
+        self.dashboard_btn = QPushButton("Dashboard")
+        self.customer_btn = QPushButton("Customers")
         self.logout_btn = QPushButton("Logout")
-        self.logout_btn.clicked.connect(self.handle_logout)
-        layout.addWidget(self.logout_btn)
 
-        self.setLayout(layout)
+        self.dashboard_btn.clicked.connect(self.show_dashboard)
+        self.customer_btn.clicked.connect(self.show_customers)
+        self.logout_btn.clicked.connect(self.handle_logout)
+
+        sidebar_layout.addWidget(self.dashboard_btn)
+        sidebar_layout.addWidget(self.customer_btn)
+        sidebar_layout.addStretch()
+        sidebar_layout.addWidget(self.logout_btn)
+
+        self.sidebar.setLayout(sidebar_layout)
+
+        # =====================
+        # Content Area
+        # =====================
+        self.content = QFrame()
+        self.content_layout = QVBoxLayout()
+        self.content.setLayout(self.content_layout)
+
+        main_layout.addWidget(self.sidebar)
+        main_layout.addWidget(self.content)
+
+        self.setLayout(main_layout)
+
+        # Default page
+        self.show_dashboard()
+
+    # =====================
+    # Pages
+    # =====================
+
+    def clear_content(self):
+        """Remove all widgets from content area"""
+        while self.content_layout.count():
+            child = self.content_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+    def show_dashboard(self):
+        self.clear_content()
+        label = QLabel("Welcome! You are logged in.")
+        label.setStyleSheet("font-size: 18px;")
+        self.content_layout.addWidget(label)
+
+    def show_customers(self):
+        self.clear_content()
+        label = QLabel("Customer Page (Integrate CustomerList here)")
+        label.setStyleSheet("font-size: 18px;")
+        self.content_layout.addWidget(label)
+
+    # =====================
+    # Login Handling
+    # =====================
 
     def launch_login(self):
         self.login_window = LoginForm(on_login_success=self.show_main)
