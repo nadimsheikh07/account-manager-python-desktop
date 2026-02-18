@@ -1,4 +1,3 @@
-import sqlite3
 from PyQt6.QtWidgets import (
     QWidget,
     QLabel,

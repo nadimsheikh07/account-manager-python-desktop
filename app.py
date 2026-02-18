@@ -1,8 +1,7 @@
 import sys
-import sqlite3
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QTimer
-from login import LoginForm
+from pages.auth.login import LoginForm
 from splash import show_splash
 from main import MainApp
 from services.auth import init_db, get_current_session

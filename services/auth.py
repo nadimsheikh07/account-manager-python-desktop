@@ -79,3 +79,12 @@ def get_current_session():
     result = cursor.fetchone()
     conn.close()
     return result[0] if result else None
+
+
+def logout(self):
+    """Clear session and close main window"""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM session")
+    conn.commit()
+    conn.close()
