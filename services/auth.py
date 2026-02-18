@@ -1,27 +1,70 @@
 import sqlite3
 from config.db import DB_FILE
+import bcrypt
+
+
+def init_db():
+    """Initialize tables if not exist and create default admin user"""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    # Create tables
+    cursor.execute(
+        "CREATE TABLE IF NOT EXISTS users (username TEXT UNIQUE, password TEXT)"
+    )
+    cursor.execute("CREATE TABLE IF NOT EXISTS session (username TEXT UNIQUE)")
+
+    # Hash default password
+    default_username = "admin"
+    default_password = "1234"
+    hashed = bcrypt.hashpw(default_password.encode("utf-8"), bcrypt.gensalt())
+
+    # Insert default admin user if not exists
+    cursor.execute(
+        "INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)",
+        (default_username, hashed.decode("utf-8")),
+    )
+
+    conn.commit()
+    conn.close()
 
 
 def authenticate_user(username, password):
     """Check SQLite for user"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS users (username TEXT UNIQUE, password TEXT)"
-    )
-    cursor.execute(
-        "SELECT * FROM users WHERE username=? AND password=?", (username, password)
-    )
-    user = cursor.fetchone()
+    cursor.execute("SELECT password FROM users WHERE username=?", (username,))
+    row = cursor.fetchone()
     conn.close()
-    return bool(user)
+
+    if not row:
+        return False
+
+    stored_hash = row[0]
+    return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
+
+
+def create_user(username, password):
+    """Create a new user with hashed password"""
+    hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO users (username, password) VALUES (?, ?)",
+            (username, hashed.decode("utf-8")),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        raise ValueError("Username already exists")
+    finally:
+        conn.close()
 
 
 def create_session(username):
     """Store current logged-in user in session table"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS session (username TEXT UNIQUE)")
     cursor.execute("DELETE FROM session")  # remove old session
     cursor.execute("INSERT INTO session (username) VALUES (?)", (username,))
     conn.commit()
@@ -32,7 +75,6 @@ def get_current_session():
     """Return username if session exists, else None"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS session (username TEXT UNIQUE)")
     cursor.execute("SELECT username FROM session LIMIT 1")
     result = cursor.fetchone()
     conn.close()

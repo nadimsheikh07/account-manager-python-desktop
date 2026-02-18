@@ -5,8 +5,7 @@ from PyQt6.QtCore import QTimer
 from login import LoginForm
 from splash import show_splash
 from main import MainApp
-from config.db import DB_FILE
-from services.auth import get_current_session
+from services.auth import init_db, get_current_session
 
 
 def main():
@@ -42,17 +41,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # Create default user if DB empty
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS users (username TEXT UNIQUE, password TEXT)"
-    )
-    cursor.execute(
-        "INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)",
-        ("admin", "1234"),
-    )
-    conn.commit()
-    conn.close()
-
+    init_db()
     main()
