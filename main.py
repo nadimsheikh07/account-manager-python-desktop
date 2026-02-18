@@ -1,6 +1,7 @@
 import sqlite3
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton
-from login import LoginForm, DB_FILE
+from login import LoginForm
+from config.db import DB_FILE
 
 
 class MainApp(QWidget):

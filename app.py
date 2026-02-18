@@ -2,9 +2,10 @@ import sys
 import sqlite3
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QTimer
-from login import LoginForm, DB_FILE
+from login import LoginForm
 from splash import show_splash
 from main import MainApp
+from config.db import DB_FILE
 
 
 def get_current_session():
