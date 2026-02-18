@@ -11,6 +11,7 @@ from pages.auth.login import LoginForm
 from pages.customer.customerList import CustomerList
 from pages.customer.customerForm import CustomerForm
 from services.auth import logout
+from config.theme import get_global_stylesheet
 
 
 class MainApp(QWidget):
@@ -28,30 +29,8 @@ class MainApp(QWidget):
         # ========== Sidebar ==========
         self.sidebar = QFrame()
         self.sidebar.setFixedWidth(200)
-        self.sidebar.setStyleSheet(
-            """
-    QFrame { 
-        background-color: #2c3e50; 
-    }
-
-    QPushButton {
-        background-color: transparent;
-        color: white;
-        padding: 10px;
-        text-align: left;
-        border: none;
-    }
-
-    QPushButton:hover {
-        background-color: #34495e;
-    }
-
-    QPushButton[active="true"] {
-        background-color: #1abc9c;
-        font-weight: bold;
-    }
-"""
-        )
+        self.sidebar.setObjectName("Sidebar")
+        self.setStyleSheet(get_global_stylesheet())
 
         sidebar_layout = QVBoxLayout()
         sidebar_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
