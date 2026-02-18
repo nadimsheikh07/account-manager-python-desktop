@@ -1,6 +1,6 @@
 ('C:\\Users\\Nadim\\dev\\python\\account-manager\\account-manager-python-desktop\\build\\app\\PYZ-00.pyz',
- [('PyQt6',
-   'C:\\Python314\\Lib\\site-packages\\PyQt6\\__init__.py',
+ [('PySide6',
+   'C:\\Python314\\Lib\\site-packages\\PySide6\\__init__.py',
    'PYMODULE'),
   ('__future__', 'C:\\Python314\\Lib\\__future__.py', 'PYMODULE'),
   ('_ast_unparse', 'C:\\Python314\\Lib\\_ast_unparse.py', 'PYMODULE'),

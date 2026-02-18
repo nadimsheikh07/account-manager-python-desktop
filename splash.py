@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QSplashScreen, QApplication
-from PyQt6.QtGui import QPixmap, QPainter, QColor, QFont, QIcon
-from PyQt6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import QSplashScreen, QApplication
+from PySide6.QtGui import QPixmap, QPainter, QColor, QFont, QIcon
+from PySide6.QtCore import Qt, QTimer
 from config.theme import PRIMARY_COLOR, TEXT_DARK
 
 

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QHeaderView,
 )
-from PyQt6.QtCore import Qt
+from PySide6.QtCore import Qt
 from functools import partial
 from config.theme import get_global_stylesheet
 from services.customer import init_customer_table, get_all_customers, delete_customer

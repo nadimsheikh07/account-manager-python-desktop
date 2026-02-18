@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget,
     QLabel,
     QVBoxLayout,
@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QFrame,
 )
-from PyQt6.QtCore import Qt
+from PySide6.QtCore import Qt
 from pages.auth.login import LoginForm
 from pages.customer.index import CustomerList
 from services.auth import logout

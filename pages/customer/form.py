@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget,
     QLabel,
     QLineEdit,
@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QMessageBox,
 )
-from PyQt6.QtCore import Qt
+from PySide6.QtCore import Qt
 from services.customer import add_customer, get_customer, update_customer
 from config.theme import get_global_stylesheet
 

@@ -1,11 +1,10 @@
 import sys
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import QTimer
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QTimer
 from pages.auth.login import LoginForm
 from splash import show_splash
 from main import MainApp
 from services.auth import init_db, get_current_session
-
 
 def main():
     app = QApplication(sys.argv)

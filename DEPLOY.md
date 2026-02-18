@@ -1,6 +1,6 @@
-Deployment Guide for PyQt6 App (Enhanced Version)
+Deployment Guide for PySide6 App (Enhanced Version)
 
-This guide covers building and deploying the PyQt6 login app with hashed passwords, session persistence, and instructions to create a Windows executable (.exe).
+This guide covers building and deploying the PySide6 login app with hashed passwords, session persistence, and instructions to create a Windows executable (.exe).
 
 1. Prerequisites
 
@@ -17,10 +17,10 @@ source venv/bin/activate       # macOS/Linux
 ```
 2. Install Dependencies
 ```bash
-pip install pyqt6 pyinstaller bcrypt
+pip install PySide6 pyinstaller bcrypt
 ```
 
-PyQt6 → GUI framework
+PySide6 → GUI framework
 
 PyInstaller → create executables
 

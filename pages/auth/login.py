@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget,
     QLabel,
     QLineEdit,
@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QFrame,
 )
-from PyQt6.QtCore import Qt
+from PySide6.QtCore import Qt
 from services.auth import authenticate_user, create_session
 
 
