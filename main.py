@@ -18,9 +18,10 @@ class MainApp(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Main App")
-        self.setGeometry(200, 200, 1000, 600)
-
+    
         self.init_ui()
+        # Open maximized
+        self.showMaximized()
 
     def init_ui(self):
         main_layout = QHBoxLayout(self)
