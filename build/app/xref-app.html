@@ -15,10 +15,11 @@
 
 <div class="node">
   <a name="app.py"></a>
-  <a target="code" href="///C:/Users/Nadim/dev/account-manager/account-manager-python-desktop/app.py" type="text/plain"><tt>app.py</tt></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/app.py" type="text/plain"><tt>app.py</tt></a>
 <span class="moduletype">Script</span>  <div class="import">
 imports:
-    <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
+    <a href="#PyQt6.QtCore">PyQt6.QtCore</a>
+ &#8226;   <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
  &#8226;   <a href="#_collections_abc">_collections_abc</a>
  &#8226;   <a href="#_weakrefset">_weakrefset</a>
  &#8226;   <a href="#abc">abc</a>
@@ -156,10 +157,11 @@ imports:
  &#8226;   <a href="#keyword">keyword</a>
  &#8226;   <a href="#linecache">linecache</a>
  &#8226;   <a href="#locale">locale</a>
- &#8226;   <a href="#login">login</a>
+ &#8226;   <a href="#main">main</a>
  &#8226;   <a href="#ntpath">ntpath</a>
  &#8226;   <a href="#operator">operator</a>
  &#8226;   <a href="#os">os</a>
+ &#8226;   <a href="#pages.auth.login">pages.auth.login</a>
  &#8226;   <a href="#posixpath">posixpath</a>
  &#8226;   <a href="#pyi_rth_inspect.py">pyi_rth_inspect.py</a>
  &#8226;   <a href="#pyi_rth_pkgutil.py">pyi_rth_pkgutil.py</a>
@@ -170,7 +172,8 @@ imports:
  &#8226;   <a href="#re._constants">re._constants</a>
  &#8226;   <a href="#re._parser">re._parser</a>
  &#8226;   <a href="#reprlib">reprlib</a>
- &#8226;   <a href="#sqlite3">sqlite3</a>
+ &#8226;   <a href="#services.auth">services.auth</a>
+ &#8226;   <a href="#splash">splash</a>
  &#8226;   <a href="#sre_compile">sre_compile</a>
  &#8226;   <a href="#sre_constants">sre_constants</a>
  &#8226;   <a href="#sre_parse">sre_parse</a>
@@ -303,7 +306,11 @@ imported by:
     <a href="#PyQt6">PyQt6</a>
  &#8226;   <a href="#PyQt6.QtGui">PyQt6.QtGui</a>
  &#8226;   <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
- &#8226;   <a href="#login">login</a>
+ &#8226;   <a href="#app.py">app.py</a>
+ &#8226;   <a href="#main">main</a>
+ &#8226;   <a href="#pages.auth.login">pages.auth.login</a>
+ &#8226;   <a href="#pages.customer.customerList">pages.customer.customerList</a>
+ &#8226;   <a href="#splash">splash</a>
 
   </div>
 
@@ -328,6 +335,7 @@ imports:
 imported by:
     <a href="#PyQt6">PyQt6</a>
  &#8226;   <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
+ &#8226;   <a href="#splash">splash</a>
 
   </div>
 
@@ -352,7 +360,11 @@ imports:
   <div class="import">
 imported by:
     <a href="#app.py">app.py</a>
- &#8226;   <a href="#login">login</a>
+ &#8226;   <a href="#main">main</a>
+ &#8226;   <a href="#pages.auth.login">pages.auth.login</a>
+ &#8226;   <a href="#pages.customer.customerForm">pages.customer.customerForm</a>
+ &#8226;   <a href="#pages.customer.customerList">pages.customer.customerList</a>
+ &#8226;   <a href="#splash">splash</a>
 
   </div>
 
@@ -382,7 +394,9 @@ imported by:
   <a target="code" href="///C:/Python314/Lib/__future__.py" type="text/plain"><tt>__future__</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imported by:
-    <a href="#codeop">codeop</a>
+    <a href="#bcrypt">bcrypt</a>
+ &#8226;   <a href="#bcrypt.__about__">bcrypt.__about__</a>
+ &#8226;   <a href="#codeop">codeop</a>
  &#8226;   <a href="#importlib.metadata">importlib.metadata</a>
  &#8226;   <a href="#importlib.metadata._meta">importlib.metadata._meta</a>
  &#8226;   <a href="#importlib.resources.readers">importlib.resources.readers</a>
@@ -715,6 +729,7 @@ imported by:
   <tt>_hashlib</tt> <span class="moduletype"><tt>C:\Python314\DLLs\_hashlib.pyd</tt></span>  <div class="import">
 imported by:
     <a href="#hashlib">hashlib</a>
+ &#8226;   <a href="#hmac">hmac</a>
 
   </div>
 
@@ -725,6 +740,16 @@ imported by:
   <tt>_heapq</tt> <span class="moduletype"><i>(builtin module)</i></span>  <div class="import">
 imported by:
     <a href="#heapq">heapq</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="_hmac"></a>
+  <tt>_hmac</tt> <span class="moduletype"><i>(builtin module)</i></span>  <div class="import">
+imported by:
+    <a href="#hmac">hmac</a>
 
   </div>
 
@@ -861,7 +886,8 @@ imported by:
   <a name="_operator"></a>
   <tt>_operator</tt> <span class="moduletype"><i>(builtin module)</i></span>  <div class="import">
 imported by:
-    <a href="#operator">operator</a>
+    <a href="#hmac">hmac</a>
+ &#8226;   <a href="#operator">operator</a>
 
   </div>
 
@@ -1525,6 +1551,64 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="bcrypt"></a>
+  <a target="code" href="///C:/Python314/Lib/site-packages/bcrypt/__init__.py" type="text/plain"><tt>bcrypt</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imports:
+    <a href="#__future__">__future__</a>
+ &#8226;   <a href="#bcrypt">bcrypt</a>
+ &#8226;   <a href="#bcrypt.__about__">bcrypt.__about__</a>
+ &#8226;   <a href="#bcrypt._bcrypt">bcrypt._bcrypt</a>
+ &#8226;   <a href="#hmac">hmac</a>
+ &#8226;   <a href="#os">os</a>
+ &#8226;   <a href="#warnings">warnings</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#bcrypt">bcrypt</a>
+ &#8226;   <a href="#bcrypt.__about__">bcrypt.__about__</a>
+ &#8226;   <a href="#bcrypt._bcrypt">bcrypt._bcrypt</a>
+ &#8226;   <a href="#services.auth">services.auth</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="bcrypt.__about__"></a>
+  <a target="code" href="///C:/Python314/Lib/site-packages/bcrypt/__about__.py" type="text/plain"><tt>bcrypt.__about__</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#__future__">__future__</a>
+ &#8226;   <a href="#bcrypt">bcrypt</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#bcrypt">bcrypt</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="bcrypt._bcrypt"></a>
+  <tt>bcrypt._bcrypt</tt> <span class="moduletype"><tt>C:\Python314\Lib\site-packages\bcrypt\_bcrypt.pyd</tt></span>  <div class="import">
+imports:
+    <a href="#bcrypt">bcrypt</a>
+ &#8226;   <a href="#typing">typing</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#bcrypt">bcrypt</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="binascii"></a>
   <tt>binascii</tt> <span class="moduletype"><i>(builtin module)</i></span>  <div class="import">
 imported by:
@@ -1974,6 +2058,34 @@ imports:
   <div class="import">
 imported by:
     <a href="#compression.zstd">compression.zstd</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="config"></a>
+  <a target="code" href="-" type="text/plain"><tt>config</tt></a>
+<span class="moduletype">NamespacePackage</span>  <div class="import">
+imported by:
+    <a href="#config.db">config.db</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="config.db"></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/config/db.py" type="text/plain"><tt>config.db</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#config">config</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#services.auth">services.auth</a>
+ &#8226;   <a href="#services.customer">services.customer</a>
 
   </div>
 
@@ -5372,6 +5484,7 @@ imported by:
  &#8226;   <a href="#ipaddress">ipaddress</a>
  &#8226;   <a href="#locale">locale</a>
  &#8226;   <a href="#operator">operator</a>
+ &#8226;   <a href="#pages.customer.customerList">pages.customer.customerList</a>
  &#8226;   <a href="#pickle">pickle</a>
  &#8226;   <a href="#pkgutil">pkgutil</a>
  &#8226;   <a href="#re">re</a>
@@ -5550,7 +5663,8 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#random">random</a>
+    <a href="#hmac">hmac</a>
+ &#8226;   <a href="#random">random</a>
  &#8226;   <a href="#urllib.request">urllib.request</a>
 
   </div>
@@ -5570,6 +5684,26 @@ imported by:
     <a href="#app.py">app.py</a>
  &#8226;   <a href="#collections">collections</a>
  &#8226;   <a href="#difflib">difflib</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="hmac"></a>
+  <a target="code" href="///C:/Python314/Lib/hmac.py" type="text/plain"><tt>hmac</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#_hashlib">_hashlib</a>
+ &#8226;   <a href="#_hmac">_hmac</a>
+ &#8226;   <a href="#_operator">_operator</a>
+ &#8226;   <a href="#hashlib">hashlib</a>
+ &#8226;   <a href="#warnings">warnings</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#bcrypt">bcrypt</a>
 
   </div>
 
@@ -6496,24 +6630,6 @@ imported by:
 </div>
 
 <div class="node">
-  <a name="login"></a>
-  <a target="code" href="///C:/Users/Nadim/dev/account-manager/account-manager-python-desktop/login.py" type="text/plain"><tt>login</tt></a>
-<span class="moduletype">SourceModule</span>  <div class="import">
-imports:
-    <a href="#PyQt6.QtCore">PyQt6.QtCore</a>
- &#8226;   <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
- &#8226;   <a href="#sqlite3">sqlite3</a>
-
-  </div>
-  <div class="import">
-imported by:
-    <a href="#app.py">app.py</a>
-
-  </div>
-
-</div>
-
-<div class="node">
   <a name="lzma"></a>
   <a target="code" href="///C:/Python314/Lib/lzma.py" type="text/plain"><tt>lzma</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
@@ -6531,6 +6647,27 @@ imported by:
     <a href="#shutil">shutil</a>
  &#8226;   <a href="#tarfile">tarfile</a>
  &#8226;   <a href="#zipfile">zipfile</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="main"></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/main.py" type="text/plain"><tt>main</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#PyQt6.QtCore">PyQt6.QtCore</a>
+ &#8226;   <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
+ &#8226;   <a href="#pages.auth.login">pages.auth.login</a>
+ &#8226;   <a href="#pages.customer.customerForm">pages.customer.customerForm</a>
+ &#8226;   <a href="#pages.customer.customerList">pages.customer.customerList</a>
+ &#8226;   <a href="#services.auth">services.auth</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#app.py">app.py</a>
 
   </div>
 
@@ -6751,6 +6888,7 @@ imported by:
  &#8226;   <a href="#_strptime">_strptime</a>
  &#8226;   <a href="#app.py">app.py</a>
  &#8226;   <a href="#argparse">argparse</a>
+ &#8226;   <a href="#bcrypt">bcrypt</a>
  &#8226;   <a href="#bz2">bz2</a>
  &#8226;   <a href="#compression.zstd._zstdfile">compression.zstd._zstdfile</a>
  &#8226;   <a href="#contextlib">contextlib</a>
@@ -6814,6 +6952,109 @@ imported by:
  &#8226;   <a href="#pkgutil">pkgutil</a>
  &#8226;   <a href="#py_compile">py_compile</a>
  &#8226;   <a href="#tracemalloc">tracemalloc</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="pages"></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/pages/__init__.py" type="text/plain"><tt>pages</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imported by:
+    <a href="#pages.auth">pages.auth</a>
+ &#8226;   <a href="#pages.customer">pages.customer</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="pages.auth"></a>
+  <a target="code" href="-" type="text/plain"><tt>pages.auth</tt></a>
+<span class="moduletype">NamespacePackage</span>  <div class="import">
+imports:
+    <a href="#pages">pages</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#pages.auth.login">pages.auth.login</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="pages.auth.login"></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/pages/auth/login.py" type="text/plain"><tt>pages.auth.login</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#PyQt6.QtCore">PyQt6.QtCore</a>
+ &#8226;   <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
+ &#8226;   <a href="#pages.auth">pages.auth</a>
+ &#8226;   <a href="#services.auth">services.auth</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#app.py">app.py</a>
+ &#8226;   <a href="#main">main</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="pages.customer"></a>
+  <a target="code" href="-" type="text/plain"><tt>pages.customer</tt></a>
+<span class="moduletype">NamespacePackage</span>  <div class="import">
+imports:
+    <a href="#pages">pages</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#pages.customer.customerForm">pages.customer.customerForm</a>
+ &#8226;   <a href="#pages.customer.customerList">pages.customer.customerList</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="pages.customer.customerForm"></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/pages/customer/customerForm.py" type="text/plain"><tt>pages.customer.customerForm</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
+ &#8226;   <a href="#pages.customer">pages.customer</a>
+ &#8226;   <a href="#services.customer">services.customer</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#main">main</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="pages.customer.customerList"></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/pages/customer/customerList.py" type="text/plain"><tt>pages.customer.customerList</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#PyQt6.QtCore">PyQt6.QtCore</a>
+ &#8226;   <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
+ &#8226;   <a href="#functools">functools</a>
+ &#8226;   <a href="#pages.customer">pages.customer</a>
+ &#8226;   <a href="#services.customer">services.customer</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#main">main</a>
 
   </div>
 
@@ -7359,6 +7600,58 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="services"></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/services/__init__.py" type="text/plain"><tt>services</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imported by:
+    <a href="#services.auth">services.auth</a>
+ &#8226;   <a href="#services.customer">services.customer</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="services.auth"></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/services/auth.py" type="text/plain"><tt>services.auth</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#bcrypt">bcrypt</a>
+ &#8226;   <a href="#config.db">config.db</a>
+ &#8226;   <a href="#services">services</a>
+ &#8226;   <a href="#sqlite3">sqlite3</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#app.py">app.py</a>
+ &#8226;   <a href="#main">main</a>
+ &#8226;   <a href="#pages.auth.login">pages.auth.login</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="services.customer"></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/services/customer.py" type="text/plain"><tt>services.customer</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#config.db">config.db</a>
+ &#8226;   <a href="#services">services</a>
+ &#8226;   <a href="#sqlite3">sqlite3</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#pages.customer.customerForm">pages.customer.customerForm</a>
+ &#8226;   <a href="#pages.customer.customerList">pages.customer.customerList</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="shutil"></a>
   <a target="code" href="///C:/Python314/Lib/shutil.py" type="text/plain"><tt>shutil</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
@@ -7442,6 +7735,24 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="splash"></a>
+  <a target="code" href="///C:/Users/Nadim/dev/python/account-manager/account-manager-python-desktop/splash.py" type="text/plain"><tt>splash</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#PyQt6.QtCore">PyQt6.QtCore</a>
+ &#8226;   <a href="#PyQt6.QtGui">PyQt6.QtGui</a>
+ &#8226;   <a href="#PyQt6.QtWidgets">PyQt6.QtWidgets</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#app.py">app.py</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="sqlite3"></a>
   <a target="code" href="///C:/Python314/Lib/sqlite3/__init__.py" type="text/plain"><tt>sqlite3</tt></a>
 <span class="moduletype">Package</span>  <div class="import">
@@ -7454,8 +7765,8 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#app.py">app.py</a>
- &#8226;   <a href="#login">login</a>
+    <a href="#services.auth">services.auth</a>
+ &#8226;   <a href="#services.customer">services.customer</a>
  &#8226;   <a href="#sqlite3">sqlite3</a>
  &#8226;   <a href="#sqlite3.__main__">sqlite3.__main__</a>
  &#8226;   <a href="#sqlite3.dbapi2">sqlite3.dbapi2</a>
@@ -8166,6 +8477,7 @@ imported by:
  &#8226;   <a href="#PyQt6.sip">PyQt6.sip</a>
  &#8226;   <a href="#_colorize">_colorize</a>
  &#8226;   <a href="#annotationlib">annotationlib</a>
+ &#8226;   <a href="#bcrypt._bcrypt">bcrypt._bcrypt</a>
  &#8226;   <a href="#copyreg">copyreg</a>
  &#8226;   <a href="#dataclasses">dataclasses</a>
  &#8226;   <a href="#functools">functools</a>
@@ -8338,6 +8650,7 @@ imported by:
  &#8226;   <a href="#annotationlib">annotationlib</a>
  &#8226;   <a href="#app.py">app.py</a>
  &#8226;   <a href="#argparse">argparse</a>
+ &#8226;   <a href="#bcrypt">bcrypt</a>
  &#8226;   <a href="#calendar">calendar</a>
  &#8226;   <a href="#codecs">codecs</a>
  &#8226;   <a href="#codeop">codeop</a>
@@ -8345,6 +8658,7 @@ imported by:
  &#8226;   <a href="#gettext">gettext</a>
  &#8226;   <a href="#glob">glob</a>
  &#8226;   <a href="#gzip">gzip</a>
+ &#8226;   <a href="#hmac">hmac</a>
  &#8226;   <a href="#http.cookiejar">http.cookiejar</a>
  &#8226;   <a href="#importlib.abc">importlib.abc</a>
  &#8226;   <a href="#importlib.machinery">importlib.machinery</a>
