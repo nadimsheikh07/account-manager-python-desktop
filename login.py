@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
 )
 from PyQt6.QtCore import Qt
-from config.db import DB_FILE
+from services.auth import authenticate_user, create_session
 
 
 class LoginForm(QWidget):
@@ -65,34 +65,10 @@ class LoginForm(QWidget):
         username = self.username_input.text().strip()
         password = self.password_input.text().strip()
 
-        if self.authenticate_user(username, password):
-            self.create_session(username)  # create session
+        if authenticate_user(username, password):
+            create_session(username)  # create session
             QMessageBox.information(self, "Login", "Login successful!")
             self.on_login_success()
             self.close()
         else:
             QMessageBox.warning(self, "Login Failed", "Invalid username or password.")
-
-    def authenticate_user(self, username, password):
-        """Check SQLite for user"""
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute(
-            "CREATE TABLE IF NOT EXISTS users (username TEXT UNIQUE, password TEXT)"
-        )
-        cursor.execute(
-            "SELECT * FROM users WHERE username=? AND password=?", (username, password)
-        )
-        user = cursor.fetchone()
-        conn.close()
-        return bool(user)
-
-    def create_session(self, username):
-        """Store current logged-in user in session table"""
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS session (username TEXT UNIQUE)")
-        cursor.execute("DELETE FROM session")  # remove old session
-        cursor.execute("INSERT INTO session (username) VALUES (?)", (username,))
-        conn.commit()
-        conn.close()

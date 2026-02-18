@@ -6,17 +6,7 @@ from login import LoginForm
 from splash import show_splash
 from main import MainApp
 from config.db import DB_FILE
-
-
-def get_current_session():
-    """Return username if session exists, else None"""
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS session (username TEXT UNIQUE)")
-    cursor.execute("SELECT username FROM session LIMIT 1")
-    result = cursor.fetchone()
-    conn.close()
-    return result[0] if result else None
+from services.auth import get_current_session
 
 
 def main():
