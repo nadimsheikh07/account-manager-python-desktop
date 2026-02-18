@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 
 from pages.auth.login import LoginForm
+from pages.customer.customerList import CustomerList
 from services.auth import logout
 
 
@@ -55,7 +56,7 @@ class MainApp(QWidget):
         self.logout_btn = QPushButton("Logout")
 
         self.dashboard_btn.clicked.connect(self.show_dashboard)
-        self.customer_btn.clicked.connect(self.show_customers)
+        self.customer_btn.clicked.connect(self.launch_customer)
         self.logout_btn.clicked.connect(self.handle_logout)
 
         sidebar_layout.addWidget(self.dashboard_btn)
@@ -97,12 +98,6 @@ class MainApp(QWidget):
         label.setStyleSheet("font-size: 18px;")
         self.content_layout.addWidget(label)
 
-    def show_customers(self):
-        self.clear_content()
-        label = QLabel("Customer Page (Integrate CustomerList here)")
-        label.setStyleSheet("font-size: 18px;")
-        self.content_layout.addWidget(label)
-
     # =====================
     # Login Handling
     # =====================
@@ -110,6 +105,10 @@ class MainApp(QWidget):
     def launch_login(self):
         self.login_window = LoginForm(on_login_success=self.show_main)
         self.login_window.show()
+
+    def launch_customer(self):
+        self.customer_window = CustomerList(on_edit_callback=self.show_main)
+        self.customer_window.show()
 
     def show_main(self):
         self.show()
