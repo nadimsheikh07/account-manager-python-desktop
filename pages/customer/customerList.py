@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from functools import partial
-
+from config.theme import get_global_stylesheet
 from services.customer import init_customer_table, get_all_customers, delete_customer
 
 
@@ -23,6 +23,7 @@ class CustomerList(QWidget):
         super().__init__()
         self.on_edit_callback = on_edit_callback
         self.setMinimumSize(600, 400)
+        self.setStyleSheet(get_global_stylesheet())
 
         init_customer_table()
         self.init_ui()
@@ -30,17 +31,22 @@ class CustomerList(QWidget):
 
     def init_ui(self):
         layout = QVBoxLayout()
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
 
-        # ===== Top Bar (Search + Add Button) =====
+        # ===== Top Bar =====
         top_layout = QHBoxLayout()
+        top_layout.setSpacing(10)
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText(
             "Search by name, email, contact, address..."
         )
-        self.search_input.textChanged.connect(self.load_data)
+        self.search_input.setMinimumHeight(36)
 
         self.add_btn = QPushButton("Add Customer")
+        self.add_btn.setProperty("class", "primary")
+        self.add_btn.setMinimumHeight(36)
         self.add_btn.clicked.connect(self.open_add_form)
 
         top_layout.addWidget(self.search_input)
@@ -54,19 +60,28 @@ class CustomerList(QWidget):
         self.table.setHorizontalHeaderLabels(
             ["ID", "Name", "Email", "Contact", "Address", "Actions"]
         )
+
         self.table.setSortingEnabled(True)
+        self.table.setAlternatingRowColors(True)
+        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+
         self.table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
         )
 
-        layout.addWidget(self.table)
+        # Hide ID column
+        self.table.setColumnHidden(0, True)
 
+        layout.addWidget(self.table)
         self.setLayout(layout)
 
     # =========================
     # Load Data
     # =========================
     def load_data(self):
+        self.table.setSortingEnabled(False)
+
         all_customers = get_all_customers()
         query = self.search_input.text().lower()
 
@@ -87,11 +102,13 @@ class CustomerList(QWidget):
                 item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
                 self.table.setItem(row_idx, col_idx, item)
 
-            # ===== Actions Column =====
+            # ===== Action Buttons =====
             edit_btn = QPushButton("Edit")
+            edit_btn.setProperty("class", "primary")
             edit_btn.clicked.connect(partial(self.edit_customer, customer[0]))
 
             delete_btn = QPushButton("Delete")
+            delete_btn.setStyleSheet("background-color:#e74c3c;color:white;")
             delete_btn.clicked.connect(partial(self.delete_customer, customer[0]))
 
             action_layout = QHBoxLayout()
@@ -103,6 +120,8 @@ class CustomerList(QWidget):
             action_widget.setLayout(action_layout)
 
             self.table.setCellWidget(row_idx, 5, action_widget)
+
+            self.table.setSortingEnabled(True)
 
     # =========================
     # Actions
