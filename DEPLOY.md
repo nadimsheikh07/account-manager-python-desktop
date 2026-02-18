@@ -9,23 +9,23 @@ pip install PySide6 pyinstaller bcrypt
 Basic Build
 
 ```bash
-pyinstaller --onefile --windowed app.py
+pyinstaller --name="Account Manager" --onefile --windowed app.py
 ```
 
 ## Include Database and Other Resources
 
 ```bash
-pyinstaller --onefile --windowed --add-data "users.db;." --icon=icon.ico app.py
+pyinstaller --name="Account Manager" --onefile --windowed --add-data "users.db;." --icon=icon.ico app.py
 ```
 
 ## Clean build:
 
 ```bash
-pyinstaller --clean --onefile --windowed app.py
+pyinstaller --name="Account Manager" --clean --onefile --windowed app.py
 ```
 
 ## Debug mode:
 
 ```bash
-pyinstaller --onefile --windowed --debug app.py
+pyinstaller --name="Account Manager" --onefile --windowed --debug app.py
 ```
