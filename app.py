@@ -1,7 +1,9 @@
 import sys
 import sqlite3
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QPushButton
+from PyQt6.QtCore import QTimer
 from login import LoginForm, DB_FILE
+from splash import show_splash
 
 
 class MainApp(QWidget):
@@ -14,7 +16,6 @@ class MainApp(QWidget):
         self.label = QLabel("Welcome! You are logged in.")
         layout.addWidget(self.label)
 
-        # Logout button
         self.logout_btn = QPushButton("Logout")
         self.logout_btn.clicked.connect(self.logout)
         layout.addWidget(self.logout_btn)
@@ -29,7 +30,6 @@ class MainApp(QWidget):
         conn.commit()
         conn.close()
         self.close()
-        # Relaunch login
         self.launch_login()
 
     def launch_login(self):
@@ -54,22 +54,37 @@ def get_current_session():
 def main():
     app = QApplication(sys.argv)
 
-    def launch_main():
-        main_window = MainApp()
-        main_window.show()
-        sys.exit(app.exec())
+    # Show splash screen
+    splash_duration = 2000  # milliseconds
+    splash = show_splash(app, duration=splash_duration)
 
-    current_user = get_current_session()
-    if current_user:
-        launch_main()
-    else:
-        login_window = LoginForm(on_login_success=launch_main)
-        login_window.show()
-        sys.exit(app.exec())
+    # Keep references to avoid garbage collection
+    windows = {}
+
+    def launch_app():
+        splash.close()  # ensure splash is gone
+
+        current_user = get_current_session()
+        if current_user:
+            windows["main"] = MainApp()
+            windows["main"].show()
+        else:
+            windows["login"] = LoginForm(
+                on_login_success=lambda: show_main_after_login(windows)
+            )
+            windows["login"].show()
+
+    def show_main_after_login(windows):
+        windows["login"].close()
+        windows["main"] = MainApp()
+        windows["main"].show()
+
+    QTimer.singleShot(splash_duration, launch_app)
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
-    # For demo: create default user if DB empty
+    # Create default user if DB empty
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute(
