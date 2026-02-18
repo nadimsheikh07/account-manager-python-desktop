@@ -13,15 +13,12 @@ from PyQt6.QtCore import Qt
 from functools import partial
 from config.theme import get_global_stylesheet
 from services.customer import init_customer_table, get_all_customers, delete_customer
+from pages.customer.customerForm import CustomerForm
 
 
 class CustomerList(QWidget):
-    def __init__(self, on_edit_callback):
-        """
-        on_edit_callback(customer_id or None)
-        """
+    def __init__(self):
         super().__init__()
-        self.on_edit_callback = on_edit_callback
         self.setMinimumSize(600, 400)
         self.setStyleSheet(get_global_stylesheet())
 
@@ -128,11 +125,19 @@ class CustomerList(QWidget):
     # =========================
     def open_add_form(self):
         """Open form for creating new customer"""
-        self.on_edit_callback(None)
+        self.customer_form = CustomerForm(
+            refresh_callback=self.load_data,
+            customer_id=None,
+        )
+        self.customer_form.show()
 
     def edit_customer(self, customer_id):
         """Open form for editing"""
-        self.on_edit_callback(customer_id)
+        self.customer_form = CustomerForm(
+            refresh_callback=self.load_data,
+            customer_id=customer_id,
+        )
+        self.customer_form.show()
 
     def delete_customer(self, customer_id):
         confirm = QMessageBox.question(

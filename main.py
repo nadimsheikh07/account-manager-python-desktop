@@ -9,7 +9,6 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from pages.auth.login import LoginForm
 from pages.customer.customerList import CustomerList
-from pages.customer.customerForm import CustomerForm
 from services.auth import logout
 from config.theme import get_global_stylesheet
 
@@ -99,16 +98,9 @@ class MainApp(QWidget):
         self.clear_content()
         self.set_active_menu(self.customer_btn)
 
-        self.customer_page = CustomerList(on_edit_callback=self.open_edit_customer)
+        self.customer_page = CustomerList()
 
         self.content_layout.addWidget(self.customer_page)
-
-    def open_edit_customer(self, customer_id):
-        self.customer_form = CustomerForm(
-            refresh_callback=self.customer_page.load_data,
-            customer_id=customer_id,
-        )
-        self.customer_form.show()
 
     # =====================
     # Login Handling
