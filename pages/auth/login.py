@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QGridLayout,
     QMessageBox,
+    QFrame,
 )
 from PyQt6.QtCore import Qt
 from services.auth import authenticate_user, create_session
@@ -16,45 +17,120 @@ class LoginForm(QWidget):
         super().__init__()
         self.on_login_success = on_login_success
         self.setWindowTitle("Login")
-        self.setMinimumSize(350, 200)
+        self.setFixedSize(400, 300)
         self.init_ui()
 
     def init_ui(self):
-        grid = QGridLayout()
-        grid.setSpacing(10)
+        # ===== Main Layout =====
+        main_layout = QVBoxLayout()
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Username
-        username_label = QLabel("Username:")
+        # ===== Card Frame =====
+        self.card = QFrame()
+        self.card.setFixedWidth(320)
+        self.card.setStyleSheet(
+            """
+            QFrame {
+                background-color: white;
+                border-radius: 12px;
+            }
+        """
+        )
+
+        card_layout = QVBoxLayout()
+        card_layout.setSpacing(15)
+        card_layout.setContentsMargins(25, 25, 25, 25)
+
+        # ===== Title =====
+        title = QLabel("Welcome Back")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet(
+            """
+            font-size: 20px;
+            font-weight: bold;
+        """
+        )
+
+        subtitle = QLabel("Please login to continue")
+        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        subtitle.setStyleSheet("color: gray; font-size: 12px;")
+
+        # ===== Inputs =====
         self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText("Enter username")
-        self.username_input.textChanged.connect(self.validate_form)
-        grid.addWidget(username_label, 0, 0, alignment=Qt.AlignmentFlag.AlignRight)
-        grid.addWidget(self.username_input, 0, 1)
+        self.username_input.setPlaceholderText("Username")
 
-        # Password
-        password_label = QLabel("Password:")
         self.password_input = QLineEdit()
+        self.password_input.setPlaceholderText("Password")
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self.password_input.setPlaceholderText("Enter password")
-        self.password_input.textChanged.connect(self.validate_form)
-        grid.addWidget(password_label, 1, 0, alignment=Qt.AlignmentFlag.AlignRight)
-        grid.addWidget(self.password_input, 1, 1)
 
-        # Login button
+        # Enter key support
+        self.password_input.returnPressed.connect(self.handle_login)
+
+        # Input Styling
+        input_style = """
+            QLineEdit {
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+            }
+            QLineEdit:focus {
+                border: 1px solid #3498db;
+            }
+        """
+        self.username_input.setStyleSheet(input_style)
+        self.password_input.setStyleSheet(input_style)
+
+        # ===== Login Button =====
         self.login_button = QPushButton("Login")
-        self.login_button.setFixedHeight(40)
+        self.login_button.setFixedHeight(35)
         self.login_button.clicked.connect(self.handle_login)
         self.login_button.setEnabled(False)
 
-        layout = QVBoxLayout()
-        layout.addLayout(grid)
-        layout.addStretch()
-        layout.addWidget(self.login_button, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addStretch()
-        self.setLayout(layout)
+        self.login_button.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                border-radius: 6px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+            QPushButton:disabled {
+                background-color: #bdc3c7;
+            }
+        """
+        )
+
+        # Connect validation
+        self.username_input.textChanged.connect(self.validate_form)
+        self.password_input.textChanged.connect(self.validate_form)
+
+        # Add widgets to card
+        card_layout.addWidget(title)
+        card_layout.addWidget(subtitle)
+        card_layout.addSpacing(10)
+        card_layout.addWidget(self.username_input)
+        card_layout.addWidget(self.password_input)
+        card_layout.addSpacing(10)
+        card_layout.addWidget(self.login_button)
+
+        self.card.setLayout(card_layout)
+        main_layout.addWidget(self.card)
+
+        self.setLayout(main_layout)
+
+        # ===== Window Background =====
+        self.setStyleSheet(
+            """
+            QWidget {
+                background-color: #f4f6f9;
+            }
+        """
+        )
 
     def validate_form(self):
-        """Enable login button only if both fields are filled"""
         if self.username_input.text().strip() and self.password_input.text().strip():
             self.login_button.setEnabled(True)
         else:
@@ -65,7 +141,7 @@ class LoginForm(QWidget):
         password = self.password_input.text().strip()
 
         if authenticate_user(username, password):
-            create_session(username)  # create session
+            create_session(username)
             QMessageBox.information(self, "Login", "Login successful!")
             self.on_login_success()
             self.close()
