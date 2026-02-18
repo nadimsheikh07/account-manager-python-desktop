@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from pages.auth.login import LoginForm
-from pages.customer.customerList import CustomerList
+from pages.customer.index import CustomerList
 from services.auth import logout
 from config.theme import get_global_stylesheet
 

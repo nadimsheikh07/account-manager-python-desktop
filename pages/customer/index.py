@@ -13,7 +13,7 @@ from PyQt6.QtCore import Qt
 from functools import partial
 from config.theme import get_global_stylesheet
 from services.customer import init_customer_table, get_all_customers, delete_customer
-from pages.customer.customerForm import CustomerForm
+from pages.customer.form import CustomerForm
 
 
 class CustomerList(QWidget):
