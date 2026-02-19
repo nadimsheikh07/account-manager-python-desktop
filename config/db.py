@@ -1,3 +1,3 @@
 import os
 
-DB_FILE = os.path.join(os.environ["USERPROFILE"], "users.db")
+DB_FILE = os.path.join(os.environ["USERPROFILE"], "accountManager.db")

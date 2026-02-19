@@ -1,7 +1,9 @@
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QFrame
 from PySide6.QtCore import Qt
 from services.auth import get_user_from_session
-
+from PySide6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis
+from PySide6.QtGui import QPainter
+from services.customer import get_monthly_customer_entries
 
 class Dashboard(QWidget):
     def __init__(self):
@@ -47,5 +49,37 @@ class Dashboard(QWidget):
 
         layout.addWidget(title)
         layout.addWidget(card)
+
+
+        # Fetch data
+        monthly_data = get_monthly_customer_entries()
+
+        # Prepare chart data
+        bar_set = QBarSet("New Customers")
+        categories = []
+
+        for month, total in monthly_data:
+            categories.append(month)
+            bar_set.append(total)
+
+        series = QBarSeries()
+        series.append(bar_set)
+
+        chart = QChart()
+        chart.addSeries(series)
+        chart.setTitle("Monthly Customer Entries")
+        chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
+
+        axis_x = QBarCategoryAxis()
+        axis_x.append(categories)
+        chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
+        series.attachAxis(axis_x)
+
+        chart.createDefaultAxes()
+
+        chart_view = QChartView(chart)
+        chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        layout.addWidget(chart_view)
 
         self.setLayout(layout)

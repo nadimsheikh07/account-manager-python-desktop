@@ -104,7 +104,7 @@ class CustomerList(QWidget):
         self.table.setRowCount(len(filtered))
 
         for row_idx, customer in enumerate(filtered):
-            customer_id, name, email, contact, address = customer
+            customer_id, name, email, contact, address, date = customer
 
             # Get current balance
             balance = get_customer_balance(customer_id)

@@ -1,6 +1,7 @@
 import sqlite3
 from config.db import DB_FILE
 import bcrypt
+from services.customer import init_customer_table
 
 
 def init_db():
@@ -13,6 +14,8 @@ def init_db():
         "CREATE TABLE IF NOT EXISTS users (username TEXT UNIQUE, email TEXT, password TEXT)"
     )
     cursor.execute("CREATE TABLE IF NOT EXISTS session (username TEXT UNIQUE)")
+
+    init_customer_table()
 
     # Hash default password
     default_username = "admin"

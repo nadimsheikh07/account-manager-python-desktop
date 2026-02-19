@@ -14,7 +14,7 @@ def init_customer_table():
             email TEXT UNIQUE NOT NULL,
             contact TEXT,
             address TEXT,
-            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """
     )
@@ -22,7 +22,7 @@ def init_customer_table():
     conn.close()
 
 
-def add_customer(name, email, contact, address):
+def add_customer(name, email, contact=None, address=None):
     """Add a new customer"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -32,7 +32,7 @@ def add_customer(name, email, contact, address):
             (name, email, contact, address),
         )
         conn.commit()
-        return cursor.lastrowid  # return the new customer id
+        return cursor.lastrowid
     except sqlite3.IntegrityError:
         raise ValueError("Email already exists")
     finally:
@@ -46,45 +46,58 @@ def get_customer(customer_id):
     cursor.execute("SELECT * FROM customers WHERE id=?", (customer_id,))
     row = cursor.fetchone()
     conn.close()
-    return row  # returns tuple (id, name, email, contact, address) or None
+    return row  # (id, name, email, contact, address, date) or None
 
 
 def get_all_customers():
-    """Fetch all customers"""
+    """Fetch all customers ordered by newest first"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM customers")
+    cursor.execute("SELECT * FROM customers ORDER BY date DESC")
     rows = cursor.fetchall()
     conn.close()
-    return rows  # list of tuples
+    return rows
 
 
 def update_customer(customer_id, name=None, email=None, contact=None, address=None):
     """Update customer details. Only provided fields are updated"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    # Build dynamic query
+
     fields = []
     values = []
-    if name:
+
+    if name is not None:
         fields.append("name=?")
         values.append(name)
-    if email:
+
+    if email is not None:
         fields.append("email=?")
         values.append(email)
-    if contact:
+
+    if contact is not None:
         fields.append("contact=?")
         values.append(contact)
-    if address:
+
+    if address is not None:
         fields.append("address=?")
         values.append(address)
-    values.append(customer_id)
 
-    if fields:
-        query = f"UPDATE customers SET {', '.join(fields)} WHERE id=?"
+    if not fields:
+        conn.close()
+        return False  # nothing to update
+
+    values.append(customer_id)
+    query = f"UPDATE customers SET {', '.join(fields)} WHERE id=?"
+
+    try:
         cursor.execute(query, tuple(values))
         conn.commit()
-    conn.close()
+        return True
+    except sqlite3.IntegrityError:
+        raise ValueError("Email already exists")
+    finally:
+        conn.close()
 
 
 def delete_customer(customer_id):
@@ -94,3 +107,24 @@ def delete_customer(customer_id):
     cursor.execute("DELETE FROM customers WHERE id=?", (customer_id,))
     conn.commit()
     conn.close()
+
+
+def get_monthly_customer_entries():
+    """Return list of (YYYY-MM, count)"""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT strftime('%Y-%m', date) as month,
+               COUNT(*) as total
+        FROM customers
+        WHERE date IS NOT NULL
+        GROUP BY month
+        ORDER BY month
+        """
+    )
+
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
