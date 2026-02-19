@@ -10,19 +10,20 @@ def init_db():
 
     # Create tables
     cursor.execute(
-        "CREATE TABLE IF NOT EXISTS users (username TEXT UNIQUE, password TEXT)"
+        "CREATE TABLE IF NOT EXISTS users (username TEXT UNIQUE, email TEXT, password TEXT)"
     )
     cursor.execute("CREATE TABLE IF NOT EXISTS session (username TEXT UNIQUE)")
 
     # Hash default password
     default_username = "admin"
+    default_email = "nadim.sheikh.07@gmail.com"
     default_password = "1234"
     hashed = bcrypt.hashpw(default_password.encode("utf-8"), bcrypt.gensalt())
 
     # Insert default admin user if not exists
     cursor.execute(
-        "INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)",
-        (default_username, hashed.decode("utf-8")),
+        "INSERT OR IGNORE INTO users (username, email, password) VALUES (?, ?, ?)",
+        (default_username, default_email, hashed.decode("utf-8")),
     )
 
     conn.commit()
@@ -88,3 +89,40 @@ def logout():
     cursor.execute("DELETE FROM session")
     conn.commit()
     conn.close()
+
+
+def get_user_from_session():
+    """
+    Return full user data from active session.
+    Returns dictionary or None.
+    """
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row  # allows dict-like access
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            """
+            SELECT u.username, u.email
+            FROM users u
+            INNER JOIN session s ON u.username = s.username
+            LIMIT 1
+        """
+        )
+
+        row = cursor.fetchone()
+
+        if row:
+            return {
+                "username": row["username"],
+                "email": row["email"],
+            }
+
+        return None
+
+    except sqlite3.Error as e:
+        print("Database error:", e)
+        return None
+
+    finally:
+        conn.close()

@@ -1,14 +1,14 @@
 from PySide6.QtWidgets import (
     QWidget,
-    QLabel,
     QVBoxLayout,
     QHBoxLayout,
     QPushButton,
     QFrame,
     QStyle,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from pages.auth.login import LoginForm
+from pages.auth.dashboard import Dashboard
 from pages.customer.index import CustomerList
 from services.auth import logout
 from config.theme import get_global_stylesheet
@@ -17,8 +17,11 @@ from config.theme import get_global_stylesheet
 class MainApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Main App")
-        self.sidebar_expanded = True  # Sidebar state
+        self.setWindowTitle("Main Application")
+        self.sidebar_expanded = True
+
+        # Apply global stylesheet once
+        self.setStyleSheet(get_global_stylesheet())
 
         self.init_ui()
         self.showMaximized()
@@ -26,11 +29,10 @@ class MainApp(QWidget):
     def init_ui(self):
         main_layout = QHBoxLayout(self)
 
-        # ========== Sidebar ==========
+        # ================= Sidebar =================
         self.sidebar = QFrame()
         self.sidebar.setFixedWidth(200)
         self.sidebar.setObjectName("Sidebar")
-        self.setStyleSheet(get_global_stylesheet())
 
         sidebar_layout = QVBoxLayout()
         sidebar_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -40,14 +42,28 @@ class MainApp(QWidget):
         self.toggle_btn.clicked.connect(self.toggle_sidebar)
         sidebar_layout.addWidget(self.toggle_btn)
 
+        # Menu buttons
         self.dashboard_btn = QPushButton("Dashboard")
         self.customer_btn = QPushButton("Customers")
         self.logout_btn = QPushButton("Logout")
 
-        self.dashboard_btn.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
-        self.customer_btn.setIcon(self.style().standardIcon(QStyle.SP_FileIcon))
-        self.logout_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
-    
+        # Set icons (Proper enum usage)
+        self.dashboard_btn.setIcon(
+            self.style().standardIcon(QStyle.StandardPixmap.SP_ComputerIcon)
+        )
+        self.customer_btn.setIcon(
+            self.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon)
+        )
+        self.logout_btn.setIcon(
+            self.style().standardIcon(QStyle.StandardPixmap.SP_DialogCloseButton)
+        )
+
+        # Optional: consistent icon size
+        for btn in [self.dashboard_btn, self.customer_btn, self.logout_btn]:
+            btn.setIconSize(QSize(20, 20))
+            btn.setMinimumHeight(40)
+
+        # Connect buttons
         self.dashboard_btn.clicked.connect(self.show_dashboard)
         self.customer_btn.clicked.connect(self.show_customers)
         self.logout_btn.clicked.connect(self.handle_logout)
@@ -59,7 +75,7 @@ class MainApp(QWidget):
 
         self.sidebar.setLayout(sidebar_layout)
 
-        # ========== Content Area ==========
+        # ================= Content Area =================
         self.content = QFrame()
         self.content_layout = QVBoxLayout()
         self.content.setLayout(self.content_layout)
@@ -70,12 +86,12 @@ class MainApp(QWidget):
 
         self.show_dashboard()
 
-    # =====================
+    # ==================================================
     # Sidebar Toggle
-    # =====================
+    # ==================================================
     def toggle_sidebar(self):
         if self.sidebar_expanded:
-            self.sidebar.setFixedWidth(50)
+            self.sidebar.setFixedWidth(60)
             self.dashboard_btn.setText("")
             self.customer_btn.setText("")
             self.logout_btn.setText("")
@@ -84,11 +100,12 @@ class MainApp(QWidget):
             self.dashboard_btn.setText("Dashboard")
             self.customer_btn.setText("Customers")
             self.logout_btn.setText("Logout")
+
         self.sidebar_expanded = not self.sidebar_expanded
 
-    # =====================
+    # ==================================================
     # Utility
-    # =====================
+    # ==================================================
     def set_active_menu(self, button):
         for btn in [self.dashboard_btn, self.customer_btn]:
             btn.setProperty("active", False)
@@ -105,15 +122,14 @@ class MainApp(QWidget):
             if child.widget():
                 child.widget().deleteLater()
 
-    # =====================
+    # ==================================================
     # Pages
-    # =====================
+    # ==================================================
     def show_dashboard(self):
         self.clear_content()
         self.set_active_menu(self.dashboard_btn)
-        label = QLabel("Welcome! You are logged in.")
-        label.setStyleSheet("font-size: 18px;")
-        self.content_layout.addWidget(label)
+        self.dashboard_page = Dashboard()
+        self.content_layout.addWidget(self.dashboard_page)
 
     def show_customers(self):
         self.clear_content()
@@ -121,9 +137,9 @@ class MainApp(QWidget):
         self.customer_page = CustomerList()
         self.content_layout.addWidget(self.customer_page)
 
-    # =====================
+    # ==================================================
     # Login Handling
-    # =====================
+    # ==================================================
     def launch_login(self):
         self.login_window = LoginForm(on_login_success=self.show_main)
         self.login_window.show()
