@@ -13,7 +13,8 @@ def init_customer_table():
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
             contact TEXT,
-            address TEXT
+            address TEXT,
+            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         )
     """
     )
