@@ -17,6 +17,16 @@ def get_global_stylesheet():
             background-color: {SIDEBAR_COLOR};
         }}
 
+        QLineEdit {{
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }}
+
+        QLineEdit:focus {{
+            border: 1px solid {PRIMARY_COLOR};
+        }}
+
         /* ================= BUTTON BASE ================= */
         QPushButton {{
             border: none;
@@ -60,5 +70,44 @@ def get_global_stylesheet():
         QPushButton[active="true"] {{
             background-color: {PRIMARY_COLOR};
             font-weight: bold;
+        }}
+
+        /* ================= DROPDOWN / COMBOBOX ================= */
+        QComboBox {{
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 5px 8px;
+            min-height: 28px;
+            background-color: #fff;
+        }}
+
+        QComboBox:hover {{
+            border: 1px solid {PRIMARY_COLOR};
+        }}
+
+        QComboBox:focus {{
+            border: 1px solid {PRIMARY_COLOR};
+        }}
+
+        QComboBox::drop-down {{
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 20px;
+            border-left: 1px solid #ccc;
+        }}
+
+        QComboBox::down-arrow {{
+            image: url(:/icons/arrow-down.png); /* optional custom arrow */
+            width: 12px;
+            height: 12px;
+        }}
+
+        QComboBox QAbstractItemView {{
+            border: 1px solid #ccc;
+            selection-background-color: {PRIMARY_COLOR};
+            selection-color: {TEXT_LIGHT};
+            background-color: #fff;
+            padding: 4px;
+            outline: 0;
         }}
     """

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from services.auth import authenticate_user, create_session
+from config.theme import get_global_stylesheet
 
 
 class LoginForm(QWidget):
@@ -18,6 +19,7 @@ class LoginForm(QWidget):
         self.on_login_success = on_login_success
         self.setWindowTitle("Login")
         self.setFixedSize(400, 300)
+        self.setStyleSheet(get_global_stylesheet())
         self.init_ui()
 
     def init_ui(self):
@@ -66,42 +68,12 @@ class LoginForm(QWidget):
         # Enter key support
         self.password_input.returnPressed.connect(self.handle_login)
 
-        # Input Styling
-        input_style = """
-            QLineEdit {
-                padding: 8px;
-                border: 1px solid #ccc;
-                border-radius: 6px;
-            }
-            QLineEdit:focus {
-                border: 1px solid #3498db;
-            }
-        """
-        self.username_input.setStyleSheet(input_style)
-        self.password_input.setStyleSheet(input_style)
-
         # ===== Login Button =====
         self.login_button = QPushButton("Login")
+        self.login_button.setProperty("class", "primary")
         self.login_button.setFixedHeight(35)
         self.login_button.clicked.connect(self.handle_login)
         self.login_button.setEnabled(False)
-
-        self.login_button.setStyleSheet(
-            """
-            QPushButton {
-                background-color: #3498db;
-                color: white;
-                border-radius: 6px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-            QPushButton:disabled {
-                background-color: #bdc3c7;
-            }
-        """
-        )
 
         # Connect validation
         self.username_input.textChanged.connect(self.validate_form)
