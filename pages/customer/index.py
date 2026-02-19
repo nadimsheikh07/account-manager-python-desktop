@@ -63,7 +63,7 @@ class CustomerList(QWidget):
 
         # ===== Table =====
         self.table = QTableWidget()
-        self.table.setColumnCount(6)
+        self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels(
             ["ID", "Name", "Email", "Contact", "Address", "Balance", "Actions"]
         )
