@@ -12,6 +12,7 @@ from pages.auth.dashboard import Dashboard
 from pages.customer.index import CustomerList
 from services.auth import logout
 from config.theme import get_global_stylesheet
+from pages.customer_account.index import CustomerAccountList
 
 
 class MainApp(QWidget):
@@ -45,6 +46,7 @@ class MainApp(QWidget):
         # Menu buttons
         self.dashboard_btn = QPushButton("Dashboard")
         self.customer_btn = QPushButton("Customers")
+        self.customer_account_btn = QPushButton("Customer Accounts")
         self.logout_btn = QPushButton("Logout")
 
         # Set icons (Proper enum usage)
@@ -54,22 +56,32 @@ class MainApp(QWidget):
         self.customer_btn.setIcon(
             self.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon)
         )
+        self.customer_account_btn.setIcon(
+            self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon)
+        )
         self.logout_btn.setIcon(
             self.style().standardIcon(QStyle.StandardPixmap.SP_DialogCloseButton)
         )
 
         # Optional: consistent icon size
-        for btn in [self.dashboard_btn, self.customer_btn, self.logout_btn]:
+        for btn in [
+            self.dashboard_btn,
+            self.customer_btn,
+            self.customer_account_btn,
+            self.logout_btn,
+        ]:
             btn.setIconSize(QSize(20, 20))
             btn.setMinimumHeight(40)
 
         # Connect buttons
         self.dashboard_btn.clicked.connect(self.show_dashboard)
         self.customer_btn.clicked.connect(self.show_customers)
+        self.customer_account_btn.clicked.connect(self.show_customer_accounts)
         self.logout_btn.clicked.connect(self.handle_logout)
 
         sidebar_layout.addWidget(self.dashboard_btn)
         sidebar_layout.addWidget(self.customer_btn)
+        sidebar_layout.addWidget(self.customer_account_btn)
         sidebar_layout.addStretch()
         sidebar_layout.addWidget(self.logout_btn)
 
@@ -94,11 +106,13 @@ class MainApp(QWidget):
             self.sidebar.setFixedWidth(60)
             self.dashboard_btn.setText("")
             self.customer_btn.setText("")
+            self.customer_account_btn.setText("")
             self.logout_btn.setText("")
         else:
             self.sidebar.setFixedWidth(200)
             self.dashboard_btn.setText("Dashboard")
             self.customer_btn.setText("Customers")
+            self.customer_account_btn.setText("Customer Accounts")
             self.logout_btn.setText("Logout")
 
         self.sidebar_expanded = not self.sidebar_expanded
@@ -107,7 +121,7 @@ class MainApp(QWidget):
     # Utility
     # ==================================================
     def set_active_menu(self, button):
-        for btn in [self.dashboard_btn, self.customer_btn]:
+        for btn in [self.dashboard_btn, self.customer_btn, self.customer_account_btn]:
             btn.setProperty("active", False)
             btn.style().unpolish(btn)
             btn.style().polish(btn)
@@ -136,6 +150,12 @@ class MainApp(QWidget):
         self.set_active_menu(self.customer_btn)
         self.customer_page = CustomerList()
         self.content_layout.addWidget(self.customer_page)
+
+    def show_customer_accounts(self):
+        self.clear_content()
+        self.set_active_menu(self.customer_account_btn)
+        self.customer_account_page = CustomerAccountList()
+        self.content_layout.addWidget(self.customer_account_page)
 
     # ==================================================
     # Login Handling

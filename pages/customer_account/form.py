@@ -1,0 +1,145 @@
+# pages/customer_account/form.py
+
+from PySide6.QtWidgets import (
+    QWidget,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QComboBox,
+    QGridLayout,
+    QVBoxLayout,
+    QMessageBox,
+)
+from PySide6.QtCore import Qt
+from services.customer_account import add_transaction, get_customer_balance
+from services.customer import get_all_customers
+from config.theme import get_global_stylesheet
+
+
+class CustomerAccountForm(QWidget):
+    def __init__(self, refresh_callback, customer_id=None):
+        """
+        customer_id=None -> Optional, select customer from dropdown
+        refresh_callback -> function to refresh the account list after save
+        """
+        super().__init__()
+        self.customer_id = customer_id
+        self.refresh_callback = refresh_callback
+        self.setWindowTitle("Customer Account Form")
+        self.setMinimumSize(400, 320)
+        self.setStyleSheet(get_global_stylesheet())
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
+
+        # Title
+        title = QLabel("Add Transaction")
+        title.setStyleSheet("font-size: 18px; font-weight: bold;")
+        layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Grid for inputs
+        grid = QGridLayout()
+        grid.setVerticalSpacing(12)
+        grid.setHorizontalSpacing(10)
+
+        # Customer dropdown
+        grid.addWidget(QLabel("Customer:"), 0, 0)
+        self.customer_dropdown = QComboBox()
+        self.load_customers()
+        grid.addWidget(self.customer_dropdown, 0, 1)
+
+        if self.customer_id:
+            # Preselect the customer if provided
+            index = self.customer_dropdown.findData(self.customer_id)
+            if index != -1:
+                self.customer_dropdown.setCurrentIndex(index)
+
+        # Type: CR or DR
+        grid.addWidget(QLabel("Type:"), 1, 0)
+        self.type_combo = QComboBox()
+        self.type_combo.addItems(["CR", "DR"])
+        grid.addWidget(self.type_combo, 1, 1)
+
+        # Amount
+        grid.addWidget(QLabel("Amount:"), 2, 0)
+        self.amount_input = QLineEdit()
+        self.amount_input.setMinimumHeight(30)
+        self.amount_input.setPlaceholderText("Enter numeric amount")
+        grid.addWidget(self.amount_input, 2, 1)
+
+        # Description (optional)
+        grid.addWidget(QLabel("Description:"), 3, 0)
+        self.description_input = QLineEdit()
+        self.description_input.setMinimumHeight(30)
+        grid.addWidget(self.description_input, 3, 1)
+
+        # Current Balance (read-only)
+        grid.addWidget(QLabel("Current Balance:"), 4, 0)
+        self.balance_label = QLabel("0.00")
+        grid.addWidget(self.balance_label, 4, 1)
+
+        # Update balance when selecting customer
+        self.customer_dropdown.currentIndexChanged.connect(self.update_balance)
+
+        layout.addLayout(grid)
+
+        # Save button
+        self.save_btn = QPushButton("Save Transaction")
+        self.save_btn.setProperty("class", "primary")
+        self.save_btn.setMinimumHeight(36)
+        self.save_btn.clicked.connect(self.save_transaction)
+        layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.setLayout(layout)
+
+        # Initial balance
+        self.update_balance()
+
+    def load_customers(self):
+        """Load all customers into the dropdown"""
+        self.customer_dropdown.clear()
+        customers = get_all_customers()
+        for c in customers:
+            customer_id, name, email, _, _ = c
+            display_text = f"{name} ({email})"
+            self.customer_dropdown.addItem(display_text, customer_id)
+
+    def update_balance(self):
+        """Update current balance display for selected customer"""
+        customer_id = self.customer_dropdown.currentData()
+        if customer_id:
+            balance = get_customer_balance(customer_id)
+            self.balance_label.setText(f"{balance:.2f}")
+        else:
+            self.balance_label.setText("0.00")
+
+    def save_transaction(self):
+        customer_id = self.customer_dropdown.currentData()
+        amount_text = self.amount_input.text().strip()
+        type_ = self.type_combo.currentText()
+        description = self.description_input.text().strip()
+
+        if not customer_id:
+            QMessageBox.warning(self, "Validation Error", "Customer is required.")
+            return
+
+        if not amount_text:
+            QMessageBox.warning(self, "Validation Error", "Amount is required.")
+            return
+
+        try:
+            amount = float(amount_text)
+        except ValueError:
+            QMessageBox.warning(self, "Validation Error", "Amount must be a number.")
+            return
+
+        try:
+            add_transaction(customer_id, amount, type_, description)
+            QMessageBox.information(self, "Success", "Transaction added successfully.")
+            self.refresh_callback()
+            self.close()
+        except Exception as e:
+            QMessageBox.warning(self, "Error", str(e))
