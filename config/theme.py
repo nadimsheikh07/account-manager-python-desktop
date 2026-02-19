@@ -4,6 +4,7 @@ SIDEBAR_COLOR = "#2c3e50"
 BACKGROUND_COLOR = "#f4f6f9"
 TEXT_LIGHT = "#ffffff"
 TEXT_DARK = "#2c3e50"
+BORDER_COLOR = "{BORDER_COLOR}ccc"  # light gray for borders
 
 
 def get_global_stylesheet():
@@ -19,7 +20,7 @@ def get_global_stylesheet():
 
         QLineEdit {{
             padding: 8px;
-            border: 1px solid #ccc;
+            border: 1px solid {BORDER_COLOR};
             border-radius: 6px;
         }}
 
@@ -74,7 +75,7 @@ def get_global_stylesheet():
 
         /* ================= DROPDOWN / COMBOBOX ================= */
         QComboBox {{
-            border: 1px solid #ccc;
+            border: 1px solid {BORDER_COLOR};
             border-radius: 6px;
             padding: 5px 8px;
             min-height: 28px;
@@ -93,7 +94,7 @@ def get_global_stylesheet():
             subcontrol-origin: padding;
             subcontrol-position: top right;
             width: 20px;
-            border-left: 1px solid #ccc;
+            border-left: 1px solid {BORDER_COLOR};
         }}
 
         QComboBox::down-arrow {{
@@ -103,7 +104,7 @@ def get_global_stylesheet():
         }}
 
         QComboBox QAbstractItemView {{
-            border: 1px solid #ccc;
+            border: 1px solid {BORDER_COLOR};
             selection-background-color: {PRIMARY_COLOR};
             selection-color: {TEXT_LIGHT};
             background-color: #fff;

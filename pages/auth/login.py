@@ -4,7 +4,6 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QPushButton,
     QVBoxLayout,
-    QGridLayout,
     QMessageBox,
     QFrame,
 )
