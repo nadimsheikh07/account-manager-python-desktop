@@ -14,6 +14,9 @@ from functools import partial
 from config.theme import get_global_stylesheet
 from services.customer import init_customer_table, get_all_customers, delete_customer
 from pages.customer.form import CustomerForm
+import pandas as pd
+from datetime import datetime
+from PySide6.QtWidgets import QFileDialog
 
 
 class CustomerList(QWidget):
@@ -46,8 +49,14 @@ class CustomerList(QWidget):
         self.add_btn.setMinimumHeight(36)
         self.add_btn.clicked.connect(self.open_add_form)
 
+        self.export_btn = QPushButton("Export to Excel")
+        self.export_btn.setProperty("class", "primary")
+        self.export_btn.setMinimumHeight(36)
+        self.export_btn.clicked.connect(self.export_to_excel)
+
         top_layout.addWidget(self.search_input)
         top_layout.addWidget(self.add_btn)
+        top_layout.addWidget(self.export_btn)
 
         layout.addLayout(top_layout)
 
@@ -151,3 +160,28 @@ class CustomerList(QWidget):
             delete_customer(customer_id)
             QMessageBox.information(self, "Deleted", "Customer deleted successfully.")
             self.load_data()
+
+    def export_to_excel(self):
+        all_customers = get_all_customers()
+        if not all_customers:
+            QMessageBox.warning(self, "No Data", "There are no customers to export.")
+            return
+
+        # Create a DataFrame
+        df = pd.DataFrame(
+            all_customers, columns=["ID", "Name", "Email", "Contact", "Address"]
+        )
+
+        # Open file dialog to save
+        now = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Excel File",
+            f"customers_{now}.xlsx",
+            "Excel Files (*.xlsx)",
+        )
+        if file_path:
+            df.to_excel(file_path, index=False)
+            QMessageBox.information(
+                self, "Exported", f"Customers exported successfully to:\n{file_path}"
+            )
