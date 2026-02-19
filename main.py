@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QFrame,
+    QStyle,
 )
 from PySide6.QtCore import Qt
 from pages.auth.login import LoginForm
@@ -43,6 +44,10 @@ class MainApp(QWidget):
         self.customer_btn = QPushButton("Customers")
         self.logout_btn = QPushButton("Logout")
 
+        self.dashboard_btn.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
+        self.customer_btn.setIcon(self.style().standardIcon(QStyle.SP_FileIcon))
+        self.logout_btn.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
+    
         self.dashboard_btn.clicked.connect(self.show_dashboard)
         self.customer_btn.clicked.connect(self.show_customers)
         self.logout_btn.clicked.connect(self.handle_logout)
