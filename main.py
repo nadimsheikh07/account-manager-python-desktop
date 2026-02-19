@@ -38,6 +38,7 @@ class MainApp(QWidget):
         sidebar_layout = QVBoxLayout()
         sidebar_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
+
         # Toggle button
         self.toggle_btn = QPushButton("☰")
         self.toggle_btn.clicked.connect(self.toggle_sidebar)
@@ -90,10 +91,14 @@ class MainApp(QWidget):
         # ================= Content Area =================
         self.content = QFrame()
         self.content_layout = QVBoxLayout()
+        
         self.content.setLayout(self.content_layout)
 
         main_layout.addWidget(self.sidebar)
         main_layout.addWidget(self.content)
+
+        main_layout.setContentsMargins(0, 0, 0, 0)  # remove extra padding
+        main_layout.setSpacing(0)  # remove spacing between pages
         self.setLayout(main_layout)
 
         self.show_dashboard()

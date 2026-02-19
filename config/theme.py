@@ -58,13 +58,13 @@ def get_global_stylesheet():
 
         /* ================= DANGER BUTTON ================= */
         QPushButton.danger {{
-            background-color: {DANGER_COLOR};  /* red */
+            background-color: {DANGER_COLOR};
             color: {TEXT_LIGHT};
             font-weight: bold;
         }}
 
         QPushButton.danger:hover {{
-            background-color: {DANGER_DARK_COLOR};  /* darker red on hover */
+            background-color: {DANGER_DARK_COLOR};
         }}
 
         QPushButton.danger:disabled {{
