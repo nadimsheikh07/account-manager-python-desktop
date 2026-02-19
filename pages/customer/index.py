@@ -17,6 +17,7 @@ from pages.customer.form import CustomerForm
 import pandas as pd
 from datetime import datetime
 from PySide6.QtWidgets import QFileDialog
+from services.customer_account import get_customer_balance  # import balance function
 
 
 class CustomerList(QWidget):
@@ -64,7 +65,7 @@ class CustomerList(QWidget):
         self.table = QTableWidget()
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(
-            ["ID", "Name", "Email", "Contact", "Address", "Actions"]
+            ["ID", "Name", "Email", "Contact", "Address", "Balance", "Actions"]
         )
 
         self.table.setSortingEnabled(True)
@@ -103,7 +104,14 @@ class CustomerList(QWidget):
         self.table.setRowCount(len(filtered))
 
         for row_idx, customer in enumerate(filtered):
-            for col_idx, value in enumerate(customer):
+            customer_id, name, email, contact, address = customer
+
+            # Get current balance
+            balance = get_customer_balance(customer_id)
+
+            row_values = [customer_id, name, email, contact, address, f"{balance:.2f}"]
+
+            for col_idx, value in enumerate(row_values):
                 item = QTableWidgetItem(str(value))
                 item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
                 self.table.setItem(row_idx, col_idx, item)
@@ -111,11 +119,11 @@ class CustomerList(QWidget):
             # ===== Action Buttons =====
             edit_btn = QPushButton("Edit")
             edit_btn.setProperty("class", "primary")
-            edit_btn.clicked.connect(partial(self.edit_customer, customer[0]))
+            edit_btn.clicked.connect(partial(self.edit_customer, customer_id))
 
             delete_btn = QPushButton("Delete")
             delete_btn.setStyleSheet("background-color:#e74c3c;color:white;")
-            delete_btn.clicked.connect(partial(self.delete_customer, customer[0]))
+            delete_btn.clicked.connect(partial(self.delete_customer, customer_id))
 
             action_layout = QHBoxLayout()
             action_layout.addWidget(edit_btn)
@@ -125,8 +133,7 @@ class CustomerList(QWidget):
             action_widget = QWidget()
             action_widget.setLayout(action_layout)
 
-            self.table.setCellWidget(row_idx, 5, action_widget)
-
+            self.table.setCellWidget(row_idx, 6, action_widget)  # new column index
             self.table.setSortingEnabled(True)
 
     # =========================
@@ -167,12 +174,24 @@ class CustomerList(QWidget):
             QMessageBox.warning(self, "No Data", "There are no customers to export.")
             return
 
-        # Create a DataFrame
-        df = pd.DataFrame(
-            all_customers, columns=["ID", "Name", "Email", "Contact", "Address"]
-        )
+        # Add balance for each customer
+        export_rows = []
+        for c in all_customers:
+            customer_id, name, email, contact, address = c
+            balance = get_customer_balance(customer_id)
+            export_rows.append(
+                {
+                    "ID": customer_id,
+                    "Name": name,
+                    "Email": email,
+                    "Contact": contact,
+                    "Address": address,
+                    "Balance": balance,
+                }
+            )
 
-        # Open file dialog to save
+        df = pd.DataFrame(export_rows)
+
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_path, _ = QFileDialog.getSaveFileName(
             self,
