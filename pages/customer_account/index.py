@@ -113,9 +113,21 @@ class CustomerAccountList(QWidget):
         for c in filtered_customers:
             customer_id, name, email, contact, address = c
             transactions = get_customer_transactions(customer_id)
+
+            # Sort transactions by date (and optionally by ID)
+            transactions.sort(
+                key=lambda t: datetime.strptime(t[4], "%Y-%m-%d %H:%M:%S")
+            )
+
+            running_balance = 0.0
             for t in transactions:
                 trx_id, trx_type, amount, description, date = t
-                balance = get_customer_balance(customer_id)
+
+                if trx_type == "CR":
+                    running_balance += amount
+                elif trx_type == "DR":
+                    running_balance -= amount
+
                 all_rows.append(
                     (
                         trx_id,
@@ -123,7 +135,7 @@ class CustomerAccountList(QWidget):
                         email,
                         trx_type,
                         amount,
-                        balance,
+                        running_balance,  # <-- running balance
                         date,
                         description,
                         customer_id,
@@ -232,9 +244,14 @@ class CustomerAccountList(QWidget):
         for c in filtered_customers:
             customer_id, name, email, contact, address = c
             transactions = get_customer_transactions(customer_id)
+            running_balance = 0.0
             for t in transactions:
                 trx_id, trx_type, amount, description, date = t
-                balance = get_customer_balance(customer_id)
+                if trx_type == "CR":
+                    running_balance += amount
+                elif trx_type == "DR":
+                    running_balance -= amount
+
                 all_rows.append(
                     {
                         "Transaction ID": trx_id,
@@ -242,7 +259,7 @@ class CustomerAccountList(QWidget):
                         "Email": email,
                         "CR": amount if trx_type == "CR" else "",
                         "DR": amount if trx_type == "DR" else "",
-                        "Balance": balance,
+                        "Balance": running_balance,
                         "Date": date,
                         "Description": description,
                     }
