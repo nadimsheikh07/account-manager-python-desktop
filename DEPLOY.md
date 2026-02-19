@@ -9,7 +9,7 @@ pip install PySide6 pyinstaller bcrypt
 Basic Build
 
 ```bash
-pyinstaller --name="Account Manager" --onefile --windowed app.py
+pyinstaller --name="Account Manager" --onefile --windowed app.py --icon=icon.ico
 ```
 
 ## Include Database and Other Resources
