@@ -110,7 +110,7 @@ class CustomerAccountList(QWidget):
         # Gather all transactions for filtered customers
         all_rows = []
         for c in filtered_customers:
-            customer_id, name, email, contact, address, date = c
+            customer_id, name, email, _, _, _ = c
             transactions = get_customer_transactions(customer_id)
 
             # Sort transactions by date (and optionally by ID)
@@ -241,7 +241,7 @@ class CustomerAccountList(QWidget):
         # Gather all transactions
         all_rows = []
         for c in filtered_customers:
-            customer_id, name, email, contact, address = c
+            customer_id, name, email, _, _, _ = c
             transactions = get_customer_transactions(customer_id)
             running_balance = 0.0
             for t in transactions:

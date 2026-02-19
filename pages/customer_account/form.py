@@ -103,7 +103,7 @@ class CustomerAccountForm(QWidget):
         self.customer_dropdown.clear()
         customers = get_all_customers()
         for c in customers:
-            customer_id, name, email, _, _ = c
+            customer_id, name, email, _, _, _ = c
             display_text = f"{name} ({email})"
             self.customer_dropdown.addItem(display_text, customer_id)
 

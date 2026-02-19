@@ -63,9 +63,9 @@ class CustomerList(QWidget):
 
         # ===== Table =====
         self.table = QTableWidget()
-        self.table.setColumnCount(7)
+        self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels(
-            ["ID", "Name", "Email", "Contact", "Address", "Balance", "Actions"]
+            ["ID", "Name", "Email", "Contact", "Address", "Date", "Balance", "Actions"]
         )
 
         self.table.setSortingEnabled(True)
@@ -99,6 +99,7 @@ class CustomerList(QWidget):
             or query in str(c[2]).lower()
             or query in str(c[3]).lower()
             or query in str(c[4]).lower()
+            or query in str(c[5]).lower()
         ]
 
         self.table.setRowCount(len(filtered))
@@ -177,7 +178,7 @@ class CustomerList(QWidget):
         # Add balance for each customer
         export_rows = []
         for c in all_customers:
-            customer_id, name, email, contact, address = c
+            customer_id, name, email, contact, address, date = c
             balance = get_customer_balance(customer_id)
             export_rows.append(
                 {
@@ -186,6 +187,7 @@ class CustomerList(QWidget):
                     "Email": email,
                     "Contact": contact,
                     "Address": address,
+                    "Date": date,
                     "Balance": balance,
                 }
             )
