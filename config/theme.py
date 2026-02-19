@@ -1,10 +1,15 @@
 PRIMARY_COLOR = "#1abc9c"  # teal
+PRIMARY_DARK_COLOR = "#21a288"  # teal
 SECONDARY_COLOR = "#3498db"  # blue
+DANGER_COLOR = "#e74c3c"  # red
+DANGER_DARK_COLOR = "#c0392b"  # red
 SIDEBAR_COLOR = "#2c3e50"
 BACKGROUND_COLOR = "#f4f6f9"
+DISABLE_BACKGROUND_COLOR = "#bdc3c7"
+DISABLE_COLOR = "#7f8c8d"
 TEXT_LIGHT = "#ffffff"
 TEXT_DARK = "#2c3e50"
-BORDER_COLOR = "{BORDER_COLOR}ccc"  # light gray for borders
+BORDER_COLOR = "#ccc"  # light gray for borders
 
 
 def get_global_stylesheet():
@@ -43,13 +48,30 @@ def get_global_stylesheet():
         }}
 
         QPushButton.primary:hover {{
-            background-color: {SECONDARY_COLOR};
+            background-color: {PRIMARY_DARK_COLOR};
         }}
 
         QPushButton.primary:disabled {{
-            background-color: #bdc3c7;
-            color: #7f8c8d;
+            background-color: {DISABLE_BACKGROUND_COLOR};
+            color: {DISABLE_COLOR};
         }}
+
+        /* ================= DANGER BUTTON ================= */
+        QPushButton.danger {{
+            background-color: {DANGER_COLOR};  /* red */
+            color: {TEXT_LIGHT};
+            font-weight: bold;
+        }}
+
+        QPushButton.danger:hover {{
+            background-color: {DANGER_DARK_COLOR};  /* darker red on hover */
+        }}
+
+        QPushButton.danger:disabled {{
+            background-color: {DISABLE_BACKGROUND_COLOR};
+            color: {DISABLE_COLOR};
+        }}
+
 
         /* ================= SIDEBAR BUTTON ================= */
         QPushButton.sidebar {{

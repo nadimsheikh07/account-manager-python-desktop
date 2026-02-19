@@ -122,7 +122,7 @@ class CustomerList(QWidget):
             edit_btn.clicked.connect(partial(self.edit_customer, customer_id))
 
             delete_btn = QPushButton("Delete")
-            delete_btn.setStyleSheet("background-color:#e74c3c;color:white;")
+            delete_btn.setProperty("class", "danger")
             delete_btn.clicked.connect(partial(self.delete_customer, customer_id))
 
             action_layout = QHBoxLayout()

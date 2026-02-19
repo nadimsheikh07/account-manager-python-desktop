@@ -16,7 +16,6 @@ from services.customer import init_customer_table, get_all_customers
 from services.customer_account import (
     init_customer_account_table,
     get_customer_transactions,
-    get_customer_balance,
     delete_transaction,  # we’ll assume we add this to the service
 )
 from pages.customer_account.form import CustomerAccountForm
@@ -179,7 +178,7 @@ class CustomerAccountList(QWidget):
             )
 
             delete_btn = QPushButton("Delete")
-            delete_btn.setStyleSheet("background-color:#e74c3c;color:white;")
+            delete_btn.setProperty("class", "danger")
             delete_btn.clicked.connect(partial(self.delete_transaction, trx_id))
 
             action_layout = QHBoxLayout()
