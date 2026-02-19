@@ -13,12 +13,13 @@ from pages.customer.index import CustomerList
 from services.auth import logout
 from config.theme import get_global_stylesheet
 from pages.customer_account.index import CustomerAccountList
+from config.app import APP_NAME
 
 
 class MainApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Main Application")
+        self.setWindowTitle(APP_NAME)
         self.sidebar_expanded = True
 
         # Apply global stylesheet once
@@ -37,7 +38,6 @@ class MainApp(QWidget):
 
         sidebar_layout = QVBoxLayout()
         sidebar_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
 
         # Toggle button
         self.toggle_btn = QPushButton("☰")
@@ -91,7 +91,7 @@ class MainApp(QWidget):
         # ================= Content Area =================
         self.content = QFrame()
         self.content_layout = QVBoxLayout()
-        
+
         self.content.setLayout(self.content_layout)
 
         main_layout.addWidget(self.sidebar)
@@ -117,7 +117,7 @@ class MainApp(QWidget):
             self.sidebar.setFixedWidth(200)
             self.dashboard_btn.setText("Dashboard")
             self.customer_btn.setText("Customers")
-            self.customer_account_btn.setText("Customer Accounts")
+            self.customer_account_btn.setText("Accounts")
             self.logout_btn.setText("Logout")
 
         self.sidebar_expanded = not self.sidebar_expanded
