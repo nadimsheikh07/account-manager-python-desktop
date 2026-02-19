@@ -1,1 +1,3 @@
-DB_FILE = "users.db"
+import os
+
+DB_FILE = os.path.join(os.environ["USERPROFILE"], "users.db")
