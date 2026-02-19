@@ -46,7 +46,7 @@ class MainApp(QWidget):
         # Menu buttons
         self.dashboard_btn = QPushButton("Dashboard")
         self.customer_btn = QPushButton("Customers")
-        self.customer_account_btn = QPushButton("Customer Accounts")
+        self.customer_account_btn = QPushButton("Accounts")
         self.logout_btn = QPushButton("Logout")
 
         # Set icons (Proper enum usage)
