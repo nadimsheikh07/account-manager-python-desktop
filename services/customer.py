@@ -116,15 +116,15 @@ def get_monthly_customer_entries():
 
     cursor.execute(
         """
-        SELECT strftime('%Y-%m', date) as month,
+        SELECT strftime('%Y-%m', date) as year_month,
                COUNT(*) as total
         FROM customers
         WHERE date IS NOT NULL
-        GROUP BY month
-        ORDER BY month
+        GROUP BY year_month
+        ORDER BY year_month
         """
     )
 
     rows = cursor.fetchall()
     conn.close()
-    return rows
+    return rows  # [('2026-01', 12), ('2026-02', 7)]

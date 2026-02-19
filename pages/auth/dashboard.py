@@ -4,6 +4,8 @@ from services.auth import get_user_from_session
 from PySide6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis
 from PySide6.QtGui import QPainter
 from services.customer import get_monthly_customer_entries
+from datetime import datetime
+
 
 class Dashboard(QWidget):
     def __init__(self):
@@ -50,7 +52,6 @@ class Dashboard(QWidget):
         layout.addWidget(title)
         layout.addWidget(card)
 
-
         # Fetch data
         monthly_data = get_monthly_customer_entries()
 
@@ -58,10 +59,16 @@ class Dashboard(QWidget):
         bar_set = QBarSet("New Customers")
         categories = []
 
-        for month, total in monthly_data:
-            categories.append(month)
+        for year_month, total in monthly_data:
+            # Convert "YYYY-MM" to datetime
+            dt = datetime.strptime(year_month, "%Y-%m")
+            formatted_month = dt.strftime(
+                "%B %Y"
+            )  # Full month name, e.g., "January 2026"
+            categories.append(formatted_month)
             bar_set.append(total)
 
+        # Create chart
         series = QBarSeries()
         series.append(bar_set)
 
@@ -71,7 +78,7 @@ class Dashboard(QWidget):
         chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
 
         axis_x = QBarCategoryAxis()
-        axis_x.append(categories)
+        axis_x.append(categories)  # ✅ Categories are now month names
         chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
         series.attachAxis(axis_x)
 
