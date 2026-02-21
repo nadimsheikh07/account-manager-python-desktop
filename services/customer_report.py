@@ -66,6 +66,13 @@ def export_customer_pdf(parent, customer_id):
     page_height = pdf.height()
     usable_width = page_width - (margin * 2)
 
+    # Full width distribution (percentage based)
+    date_w = int(usable_width * 0.15)
+    type_w = int(usable_width * 0.10)
+    desc_w = int(usable_width * 0.35)
+    amount_w = int(usable_width * 0.20)
+    balance_w = usable_width - (date_w + type_w + desc_w + amount_w)
+
     y = margin
 
     # ---------------- Title ----------------
@@ -92,11 +99,11 @@ def export_customer_pdf(parent, customer_id):
 
     # Column widths must fit usable_width
     col_widths = [
-        140,  # Date
-        90,  # Type
-        330,  # Description
-        140,  # Amount
-        140,  # Balance
+        date_w,
+        type_w,
+        desc_w,
+        amount_w,
+        balance_w,
     ]
 
     columns = ["Date", "Type", "Description", "Amount", "Balance"]
