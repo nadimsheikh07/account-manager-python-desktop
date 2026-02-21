@@ -44,7 +44,7 @@ class LoginForm(QWidget):
         )
 
         card_layout = QVBoxLayout()
-        card_layout.setSpacing(15)
+        card_layout.setSpacing(8)
         card_layout.setContentsMargins(25, 25, 25, 25)
 
         # Title
@@ -56,13 +56,22 @@ class LoginForm(QWidget):
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         subtitle.setStyleSheet("color: gray; font-size: 12px;")
 
-        # Inputs
+        # Username
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText("Username")
 
+        self.username_error_label = QLabel()
+        self.username_error_label.setStyleSheet("color: #e74c3c; font-size: 11px;")
+        self.username_error_label.setVisible(False)
+
+        # Password
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Password")
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
+
+        self.password_error_label = QLabel()
+        self.password_error_label.setStyleSheet("color: #e74c3c; font-size: 11px;")
+        self.password_error_label.setVisible(False)
 
         # Login button
         self.login_button = QPushButton("Login")
@@ -71,8 +80,11 @@ class LoginForm(QWidget):
         self.login_button.setEnabled(False)
 
         # Connections
+        self.username_input.textChanged.connect(self.clear_username_error)
+        self.password_input.textChanged.connect(self.clear_password_error)
         self.username_input.textChanged.connect(self.validate_form)
         self.password_input.textChanged.connect(self.validate_form)
+
         self.password_input.returnPressed.connect(self.handle_login)
         self.login_button.clicked.connect(self.handle_login)
 
@@ -80,8 +92,13 @@ class LoginForm(QWidget):
         card_layout.addWidget(title)
         card_layout.addWidget(subtitle)
         card_layout.addSpacing(10)
+
         card_layout.addWidget(self.username_input)
+        card_layout.addWidget(self.username_error_label)
+
         card_layout.addWidget(self.password_input)
+        card_layout.addWidget(self.password_error_label)
+
         card_layout.addSpacing(10)
         card_layout.addWidget(self.login_button)
 
@@ -89,7 +106,6 @@ class LoginForm(QWidget):
         main_layout.addWidget(self.card)
         self.setLayout(main_layout)
 
-        # Window background
         self.setStyleSheet(
             self.styleSheet()
             + """
@@ -106,16 +122,18 @@ class LoginForm(QWidget):
         username = self.username_input.text().strip()
         password = self.password_input.text().strip()
 
-        self.clear_errors()
-
         is_valid = True
 
         if not username:
             set_error(True, self.username_input)
+            self.username_error_label.setText("Username is required")
+            self.username_error_label.setVisible(True)
             is_valid = False
 
         if not password:
             set_error(True, self.password_input)
+            self.password_error_label.setText("Password is required")
+            self.password_error_label.setVisible(True)
             is_valid = False
 
         self.login_button.setEnabled(is_valid)
@@ -140,10 +158,10 @@ class LoginForm(QWidget):
             set_error(True, self.password_input)
             QMessageBox.warning(self, "Login Failed", "Invalid username or password.")
 
-    # ==============================
-    # Error Styling Helpers
-    # ==============================
+    def clear_username_error(self):
+        set_error(False, self.username_input)
+        self.username_error_label.setVisible(False)
 
-    def clear_errors(self):
-        for widget in [self.username_input, self.password_input]:
-            set_error(False, widget)
+    def clear_password_error(self):
+        set_error(False, self.password_input)
+        self.password_error_label.setVisible(False)
