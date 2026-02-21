@@ -12,11 +12,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from functools import partial
 from config.theme import get_global_stylesheet
-from services.customer import get_all_customers, delete_customer
+from services.customer import get_all_customers, delete_customer, export_to_excel
 from pages.customer.form import CustomerForm
-import pandas as pd
-from datetime import datetime
-from PySide6.QtWidgets import QFileDialog
 from services.customer_account import get_customer_balance  # import balance function
 from services.customer_report import export_customer_pdf
 
@@ -53,7 +50,7 @@ class CustomerList(QWidget):
         self.export_btn = QPushButton("Export to Excel")
         self.export_btn.setProperty("class", "primary")
         self.export_btn.setMinimumHeight(36)
-        self.export_btn.clicked.connect(self.export_to_excel)
+        self.export_btn.clicked.connect(lambda: export_to_excel(self))
 
         top_layout.addWidget(self.search_input)
         top_layout.addWidget(self.add_btn)
@@ -173,41 +170,3 @@ class CustomerList(QWidget):
             delete_customer(customer_id)
             QMessageBox.information(self, "Deleted", "Customer deleted successfully.")
             self.load_data()
-
-    def export_to_excel(self):
-        all_customers = get_all_customers()
-        if not all_customers:
-            QMessageBox.warning(self, "No Data", "There are no customers to export.")
-            return
-
-        # Add balance for each customer
-        export_rows = []
-        for c in all_customers:
-            customer_id, name, email, contact, address, date = c
-            balance = get_customer_balance(customer_id)
-            export_rows.append(
-                {
-                    "ID": customer_id,
-                    "Name": name,
-                    "Email": email,
-                    "Contact": contact,
-                    "Address": address,
-                    "Date": date,
-                    "Balance": balance,
-                }
-            )
-
-        df = pd.DataFrame(export_rows)
-
-        now = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_path, _ = QFileDialog.getSaveFileName(
-            self,
-            "Save Excel File",
-            f"customers_{now}.xlsx",
-            "Excel Files (*.xlsx)",
-        )
-        if file_path:
-            df.to_excel(file_path, index=False)
-            QMessageBox.information(
-                self, "Exported", f"Customers exported successfully to:\n{file_path}"
-            )

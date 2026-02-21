@@ -16,11 +16,10 @@ from services.customer import get_all_customers
 from services.customer_account import (
     get_customer_transactions,
     delete_transaction,  # we’ll assume we add this to the service
+    export_to_excel,
 )
 from pages.customer_account.form import CustomerAccountForm
-import pandas as pd
 from datetime import datetime
-from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 
 class CustomerAccountList(QWidget):
@@ -56,8 +55,7 @@ class CustomerAccountList(QWidget):
         self.export_btn = QPushButton("Export to Excel")
         self.export_btn.setProperty("class", "primary")
         self.export_btn.setMinimumHeight(36)
-        self.export_btn.clicked.connect(self.export_to_excel)
-
+        self.export_btn.clicked.connect(lambda: export_to_excel(self))
         top_layout.addWidget(self.search_input)
         top_layout.addWidget(self.add_btn)
         top_layout.addWidget(self.export_btn)
@@ -220,64 +218,3 @@ class CustomerAccountList(QWidget):
                 self, "Deleted", "Transaction deleted successfully."
             )
             self.load_data()
-
-    def export_to_excel(self):
-        all_customers = get_all_customers()
-        query = self.search_input.text().lower()
-
-        # Filter customers
-        filtered_customers = [
-            c
-            for c in all_customers
-            if query in str(c[1]).lower()
-            or query in str(c[2]).lower()
-            or query in str(c[3]).lower()
-        ]
-
-        # Gather all transactions
-        all_rows = []
-        for c in filtered_customers:
-            customer_id, name, email, _, _, _ = c
-            transactions = get_customer_transactions(customer_id)
-            running_balance = 0.0
-            for t in transactions:
-                trx_id, trx_type, amount, description, date = t
-                if trx_type == "CR":
-                    running_balance += amount
-                elif trx_type == "DR":
-                    running_balance -= amount
-
-                all_rows.append(
-                    {
-                        "Transaction ID": trx_id,
-                        "Customer": name,
-                        "Email": email,
-                        "CR": amount if trx_type == "CR" else "",
-                        "DR": amount if trx_type == "DR" else "",
-                        "Balance": running_balance,
-                        "Date": date,
-                        "Description": description,
-                    }
-                )
-
-        if not all_rows:
-            QMessageBox.warning(self, "No Data", "There are no transactions to export.")
-            return
-
-        df = pd.DataFrame(all_rows)
-
-        # Open save dialog
-        now = datetime.now().strftime("%Y%m%d_%H%M%S")
-        file_path, _ = QFileDialog.getSaveFileName(
-            self,
-            "Save Excel File",
-            f"customer_accounts_{now}.xlsx",
-            "Excel Files (*.xlsx)",
-        )
-        if file_path:
-            df.to_excel(file_path, index=False)
-            QMessageBox.information(
-                self,
-                "Exported",
-                f"Customer accounts exported successfully to:\n{file_path}",
-            )

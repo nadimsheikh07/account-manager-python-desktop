@@ -1,5 +1,12 @@
 import sqlite3
 from config.db import DB_FILE
+import pandas as pd
+from PySide6.QtWidgets import (
+    QMessageBox,
+    QFileDialog,
+)
+from datetime import datetime
+
 
 def add_customer(name, email, contact=None, address=None):
     """Add a new customer"""
@@ -107,3 +114,44 @@ def get_monthly_customer_entries():
     rows = cursor.fetchall()
     conn.close()
     return rows  # [('2026-01', 12), ('2026-02', 7)]
+
+
+def export_to_excel(self):
+    from .customer_account import get_customer_balance  # import balance function
+
+    all_customers = get_all_customers()
+    if not all_customers:
+        QMessageBox.warning(self, "No Data", "There are no customers to export.")
+        return
+
+    # Add balance for each customer
+    export_rows = []
+    for c in all_customers:
+        customer_id, name, email, contact, address, date = c
+        balance = get_customer_balance(customer_id)
+        export_rows.append(
+            {
+                "ID": customer_id,
+                "Name": name,
+                "Email": email,
+                "Contact": contact,
+                "Address": address,
+                "Date": date,
+                "Balance": balance,
+            }
+        )
+
+    df = pd.DataFrame(export_rows)
+
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_path, _ = QFileDialog.getSaveFileName(
+        self,
+        "Save Excel File",
+        f"customers_{now}.xlsx",
+        "Excel Files (*.xlsx)",
+    )
+    if file_path:
+        df.to_excel(file_path, index=False)
+        QMessageBox.information(
+            self, "Exported", f"Customers exported successfully to:\n{file_path}"
+        )
