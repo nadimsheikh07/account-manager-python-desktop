@@ -133,4 +133,10 @@ def get_global_stylesheet():
             padding: 4px;
             outline: 0;
         }}
+
+        QLineEdit[error="true"] {{
+            border: 2px solid {DANGER_COLOR};
+            border-radius: 6px;
+            padding: 4px;
+        }}
     """
