@@ -2,27 +2,6 @@ import sqlite3
 from config.db import DB_FILE
 
 
-def init_customer_account_table():
-    """Initialize the customer account table if it doesn't exist"""
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS customer_accounts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            customer_id INTEGER NOT NULL,
-            type TEXT CHECK(type IN ('CR', 'DR')) NOT NULL,
-            amount REAL NOT NULL,
-            description TEXT,
-            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
-        )
-        """
-    )
-    conn.commit()
-    conn.close()
-
-
 def add_transaction(customer_id, amount, type, description=None):
     """Add a credit (CR) or debit (DR) transaction for a customer"""
     if type not in ("CR", "DR"):

@@ -4,7 +4,9 @@ from PySide6.QtCore import QTimer
 from pages.auth.login import LoginForm
 from splash import show_splash
 from main import MainApp
-from services.auth import init_db, get_current_session
+from services.auth import get_current_session
+from services.dbSetup import init_db
+
 
 def main():
     app = QApplication(sys.argv)

@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from functools import partial
 from config.theme import get_global_stylesheet
-from services.customer import init_customer_table, get_all_customers, delete_customer
+from services.customer import get_all_customers, delete_customer
 from pages.customer.form import CustomerForm
 import pandas as pd
 from datetime import datetime
@@ -26,7 +26,6 @@ class CustomerList(QWidget):
         self.setMinimumSize(600, 400)
         self.setStyleSheet(get_global_stylesheet())
 
-        init_customer_table()
         self.init_ui()
         self.load_data()
 

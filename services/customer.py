@@ -1,27 +1,6 @@
 import sqlite3
 from config.db import DB_FILE
 
-
-def init_customer_table():
-    """Initialize the customer table if it doesn't exist"""
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS customers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            contact TEXT,
-            address TEXT,
-            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """
-    )
-    conn.commit()
-    conn.close()
-
-
 def add_customer(name, email, contact=None, address=None):
     """Add a new customer"""
     conn = sqlite3.connect(DB_FILE)
