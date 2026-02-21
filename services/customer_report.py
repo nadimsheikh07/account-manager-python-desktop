@@ -58,54 +58,95 @@ def export_customer_pdf(parent, customer_id):
     pdf.setResolution(300)
 
     painter = QPainter(pdf)
+
+    # ---- Page Setup ----
+    margin = 80
+    page_width = pdf.width()
+    page_height = pdf.height()
+    usable_width = page_width - (margin * 2)
+
+    y = margin
+
+    # ---- Title ----
+    painter.setFont(QFont("Arial", 16, QFont.Weight.Bold))
+    painter.drawText(margin, y, "Customer Ledger Report")
+    y += 50
+
     painter.setFont(QFont("Arial", 10))
 
-    y = 100
-
-    # Title
-    painter.setFont(QFont("Arial", 14))
-    painter.drawText(100, y, "Customer Ledger Report")
-    y += 60
-
-    painter.setFont(QFont("Arial", 10))
-
-    # Customer Info
-    painter.drawText(100, y, f"Name: {customer[1]}")
-    y += 25
-    painter.drawText(100, y, f"Email: {customer[2]}")
-    y += 25
-    painter.drawText(100, y, f"Contact: {customer[3] or ''}")
-    y += 40
-
-    # Table Header
-    painter.drawText(100, y, "Date")
-    painter.drawText(250, y, "Type")
-    painter.drawText(320, y, "Amount")
-    painter.drawText(420, y, "Description")
+    # ---- Customer Info ----
+    painter.drawText(margin, y, f"Name: {customer[1]}")
     y += 20
-    painter.drawLine(100, y, 800, y)
-    y += 25
+    painter.drawText(margin, y, f"Email: {customer[2]}")
+    y += 20
+    painter.drawText(margin, y, f"Contact: {customer[3] or ''}")
+    y += 30
 
-    # Table Rows
+    painter.drawLine(margin, y, page_width - margin, y)
+    y += 30
+
+    # ---- Table Column Setup ----
+    col_date = margin
+    col_type = margin + 120
+    col_desc = margin + 190
+    col_amount = margin + usable_width - 150
+    col_balance = margin + usable_width - 70
+
+    row_height = 25
+
+    # ---- Table Header ----
+    painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+
+    painter.drawRect(margin, y, usable_width, row_height)
+    painter.drawText(col_date, y + 17, "Date")
+    painter.drawText(col_type, y + 17, "Type")
+    painter.drawText(col_desc, y + 17, "Description")
+    painter.drawText(col_amount, y + 17, "Amount")
+    painter.drawText(col_balance, y + 17, "Balance")
+
+    y += row_height
+
+    painter.setFont(QFont("Arial", 9))
+
+    running_balance = 0
+
+    # ---- Table Rows ----
     for acc in accounts:
-        painter.drawText(100, y, str(acc[3]))
-        painter.drawText(250, y, acc[0])
-        painter.drawText(320, y, f"{acc[1]:.2f}")
-        painter.drawText(420, y, acc[2] or "")
-        y += 20
 
-        if y > 1100:
+        if y > page_height - margin - 100:
             pdf.newPage()
-            y = 100
+            y = margin
 
-    y += 30
-    painter.drawLine(100, y, 800, y)
+        acc_type, amount, description, date = acc
+
+        if acc_type == "CR":
+            running_balance += amount
+        else:
+            running_balance -= amount
+
+        # Draw row border
+        painter.drawRect(margin, y, usable_width, row_height)
+
+        painter.drawText(col_date, y + 17, str(date))
+        painter.drawText(col_type, y + 17, acc_type)
+        painter.drawText(col_desc, y + 17, description or "")
+
+        # Right aligned amounts
+        painter.drawText(col_amount, y + 17, f"{amount:,.2f}")
+        painter.drawText(col_balance, y + 17, f"{running_balance:,.2f}")
+
+        y += row_height
+
+    y += 20
+    painter.drawLine(margin, y, page_width - margin, y)
     y += 30
 
-    painter.drawText(100, y, f"Total Credit: {total_cr:.2f}")
+    # ---- Summary ----
+    painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+    painter.drawText(margin, y, f"Total Credit: {total_cr:,.2f}")
     y += 20
-    painter.drawText(100, y, f"Total Debit: {total_dr:.2f}")
+    painter.drawText(margin, y, f"Total Debit: {total_dr:,.2f}")
     y += 20
-    painter.drawText(100, y, f"Balance: {balance:.2f}")
+    painter.drawText(margin, y, f"Final Balance: {balance:,.2f}")
 
     painter.end()
