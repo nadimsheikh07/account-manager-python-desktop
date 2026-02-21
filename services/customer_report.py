@@ -3,6 +3,7 @@ from config.db import DB_FILE
 from PySide6.QtGui import QPdfWriter, QPainter, QFont, QColor, QPageSize
 from PySide6.QtCore import QRect, Qt
 from PySide6.QtWidgets import QFileDialog
+from utils.pdf_utils import PDFExporter
 
 
 def get_customer_with_accounts(customer_id):
@@ -38,164 +39,53 @@ def get_customer_with_accounts(customer_id):
 
 def export_customer_pdf(parent, customer_id):
     data = get_customer_with_accounts(customer_id)
-
     if not data:
         return
 
     customer, accounts, total_cr, total_dr, balance = data
 
-    file_path, _ = QFileDialog.getSaveFileName(
-        parent,
-        "Save PDF",
-        f"{customer[1]}_report.pdf",
-        "PDF Files (*.pdf)",
+    pdf = PDFExporter(parent, filename=f"{customer[1]}_report.pdf")
+
+    # Title
+    pdf.draw_title("Customer Ledger Report")
+
+    # Customer Info
+    pdf.draw_customer_info(
+        {
+            "Name": customer[1],
+            "Email": customer[2],
+            "Contact": customer[3],
+        }
     )
 
-    if not file_path:
-        return
-
-    pdf = QPdfWriter(file_path)
-    pdf.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
-    pdf.setResolution(300)
-
-    painter = QPainter(pdf)
-
-    # ---------------- Page Setup ----------------
-    margin = 80
-    page_width = pdf.width()
-    page_height = pdf.height()
-    usable_width = page_width - (margin * 2)
-
-    # Full width distribution (percentage based)
-    date_w = int(usable_width * 0.15)
-    type_w = int(usable_width * 0.10)
-    desc_w = int(usable_width * 0.35)
-    amount_w = int(usable_width * 0.20)
-    balance_w = usable_width - (date_w + type_w + desc_w + amount_w)
-
-    y = margin
-
-    # ---------------- Title ----------------
-    painter.setFont(QFont("Arial", 16, QFont.Weight.Bold))
-    painter.drawText(margin, y, "Customer Ledger Report")
-    y += 80
-
-    painter.setFont(QFont("Arial", 10))
-
-    # ---------------- Customer Info ----------------
-    painter.drawText(margin, y, f"Name: {customer[1]}")
-    y += 50
-    painter.drawText(margin, y, f"Email: {customer[2]}")
-    y += 50
-    painter.drawText(margin, y, f"Contact: {customer[3] or ''}")
-    y += 60
-
-    painter.drawLine(margin, y, page_width - margin, y)
-    y += 60
-
-    # ---------------- Table Setup ----------------
-    row_height = 70
+    # Table
     running_balance = 0
-
-    # Column widths must fit usable_width
-    col_widths = [
-        date_w,
-        type_w,
-        desc_w,
-        amount_w,
-        balance_w,
-    ]
+    table_rows = []
+    for acc in accounts:
+        acc_type, amount, description, date = acc
+        running_balance = (
+            running_balance + amount if acc_type == "CR" else running_balance - amount
+        )
+        table_rows.append(
+            [
+                date,
+                acc_type,
+                description or "",
+                f"{amount:,.2f}",
+                f"{running_balance:,.2f}",
+            ]
+        )
 
     columns = ["Date", "Type", "Description", "Amount", "Balance"]
+    pdf.draw_table(columns, table_rows)
 
-    def draw_table_header():
-        nonlocal y
-        painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+    # Summary
+    pdf.draw_summary(
+        {
+            "Total Credit": total_cr,
+            "Total Debit": total_dr,
+            "Final Balance": balance,
+        }
+    )
 
-        x = margin
-        for i, col in enumerate(columns):
-            painter.drawRect(x, y, col_widths[i], row_height)
-            painter.drawText(
-                QRect(x + 5, y, col_widths[i] - 10, row_height),
-                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
-                col,
-            )
-            x += col_widths[i]
-
-        y += row_height
-        painter.setFont(QFont("Arial", 9))
-
-    draw_table_header()
-
-    # ---------------- Table Rows ----------------
-    for index, acc in enumerate(accounts):
-
-        # New page check
-        if y > page_height - margin - row_height:
-            pdf.newPage()
-            y = margin
-            draw_table_header()
-
-        acc_type, amount, description, date = acc
-
-        if acc_type == "CR":
-            running_balance += amount
-        else:
-            running_balance -= amount
-
-        row_data = [
-            str(date),
-            acc_type,
-            description or "",
-            f"{amount:,.2f}",
-            f"{running_balance:,.2f}",
-        ]
-
-        x = margin
-
-        # Alternate row background
-        if index % 2 == 0:
-            painter.fillRect(
-                margin,
-                y,
-                sum(col_widths),
-                row_height,
-                QColor(245, 245, 245),
-            )
-
-        for i, cell in enumerate(row_data):
-
-            painter.drawRect(x, y, col_widths[i], row_height)
-
-            # Alignment rules
-            if i == 1:
-                alignment = Qt.AlignmentFlag.AlignCenter
-            elif i >= 3:
-                alignment = Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
-            else:
-                alignment = Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
-
-            painter.drawText(
-                QRect(x + 5, y, col_widths[i] - 10, row_height),
-                alignment,
-                cell,
-            )
-
-            x += col_widths[i]
-
-        y += row_height
-
-    # ---------------- Summary Section ----------------
-    y += 40
-    painter.drawLine(margin, y, page_width - margin, y)
-    y += 60
-
-    painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-
-    painter.drawText(margin, y, f"Total Credit: {total_cr:,.2f}")
-    y += 50
-    painter.drawText(margin, y, f"Total Debit: {total_dr:,.2f}")
-    y += 50
-    painter.drawText(margin, y, f"Final Balance: {balance:,.2f}")
-
-    painter.end()
+    pdf.finish()
