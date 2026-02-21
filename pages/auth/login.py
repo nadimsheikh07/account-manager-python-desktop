@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from services.auth import authenticate_user, create_session
 from config.theme import get_global_stylesheet
+from utils.form_utils import set_error
 
 
 class LoginForm(QWidget):
@@ -110,11 +111,11 @@ class LoginForm(QWidget):
         is_valid = True
 
         if not username:
-            self.set_error(self.username_input)
+            set_error(True, self.username_input)
             is_valid = False
 
         if not password:
-            self.set_error(self.password_input)
+            set_error(True, self.password_input)
             is_valid = False
 
         self.login_button.setEnabled(is_valid)
@@ -135,20 +136,14 @@ class LoginForm(QWidget):
             self.on_login_success()
             self.close()
         else:
-            self.set_error(self.username_input)
-            self.set_error(self.password_input)
+            set_error(True, self.username_input)
+            set_error(True, self.password_input)
             QMessageBox.warning(self, "Login Failed", "Invalid username or password.")
 
     # ==============================
     # Error Styling Helpers
     # ==============================
-    def set_error(self, widget):
-        widget.setProperty("error", True)
-        widget.style().unpolish(widget)
-        widget.style().polish(widget)
 
     def clear_errors(self):
         for widget in [self.username_input, self.password_input]:
-            widget.setProperty("error", False)
-            widget.style().unpolish(widget)
-            widget.style().polish(widget)
+            set_error(False, widget)
