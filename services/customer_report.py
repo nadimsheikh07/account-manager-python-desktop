@@ -1,6 +1,7 @@
 import sqlite3
 from config.db import DB_FILE
-from PySide6.QtGui import QPdfWriter, QPainter, QFont, QPageSize
+from PySide6.QtGui import QPdfWriter, QPainter, QFont, QColor, QPageSize
+from PySide6.QtCore import QRect, Qt
 from PySide6.QtWidgets import QFileDialog
 
 
@@ -59,7 +60,7 @@ def export_customer_pdf(parent, customer_id):
 
     painter = QPainter(pdf)
 
-    # ---- Page Setup ----
+    # ---------------- Page Setup ----------------
     margin = 80
     page_width = pdf.width()
     page_height = pdf.height()
@@ -67,55 +68,66 @@ def export_customer_pdf(parent, customer_id):
 
     y = margin
 
-    # ---- Title ----
+    # ---------------- Title ----------------
     painter.setFont(QFont("Arial", 16, QFont.Weight.Bold))
     painter.drawText(margin, y, "Customer Ledger Report")
-    y += 50
+    y += 80
 
     painter.setFont(QFont("Arial", 10))
 
-    # ---- Customer Info ----
+    # ---------------- Customer Info ----------------
     painter.drawText(margin, y, f"Name: {customer[1]}")
-    y += 20
+    y += 50
     painter.drawText(margin, y, f"Email: {customer[2]}")
-    y += 20
+    y += 50
     painter.drawText(margin, y, f"Contact: {customer[3] or ''}")
-    y += 30
+    y += 60
 
     painter.drawLine(margin, y, page_width - margin, y)
-    y += 30
+    y += 60
 
-    # ---- Table Column Setup ----
-    col_date = margin
-    col_type = margin + 120
-    col_desc = margin + 190
-    col_amount = margin + usable_width - 150
-    col_balance = margin + usable_width - 70
-
-    row_height = 25
-
-    # ---- Table Header ----
-    painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-
-    painter.drawRect(margin, y, usable_width, row_height)
-    painter.drawText(col_date, y + 17, "Date")
-    painter.drawText(col_type, y + 17, "Type")
-    painter.drawText(col_desc, y + 17, "Description")
-    painter.drawText(col_amount, y + 17, "Amount")
-    painter.drawText(col_balance, y + 17, "Balance")
-
-    y += row_height
-
-    painter.setFont(QFont("Arial", 9))
-
+    # ---------------- Table Setup ----------------
+    row_height = 70
     running_balance = 0
 
-    # ---- Table Rows ----
-    for acc in accounts:
+    # Column widths must fit usable_width
+    col_widths = [
+        140,  # Date
+        90,  # Type
+        330,  # Description
+        140,  # Amount
+        140,  # Balance
+    ]
 
-        if y > page_height - margin - 100:
+    columns = ["Date", "Type", "Description", "Amount", "Balance"]
+
+    def draw_table_header():
+        nonlocal y
+        painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+
+        x = margin
+        for i, col in enumerate(columns):
+            painter.drawRect(x, y, col_widths[i], row_height)
+            painter.drawText(
+                QRect(x + 5, y, col_widths[i] - 10, row_height),
+                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+                col,
+            )
+            x += col_widths[i]
+
+        y += row_height
+        painter.setFont(QFont("Arial", 9))
+
+    draw_table_header()
+
+    # ---------------- Table Rows ----------------
+    for index, acc in enumerate(accounts):
+
+        # New page check
+        if y > page_height - margin - row_height:
             pdf.newPage()
             y = margin
+            draw_table_header()
 
         acc_type, amount, description, date = acc
 
@@ -124,29 +136,59 @@ def export_customer_pdf(parent, customer_id):
         else:
             running_balance -= amount
 
-        # Draw row border
-        painter.drawRect(margin, y, usable_width, row_height)
+        row_data = [
+            str(date),
+            acc_type,
+            description or "",
+            f"{amount:,.2f}",
+            f"{running_balance:,.2f}",
+        ]
 
-        painter.drawText(col_date, y + 17, str(date))
-        painter.drawText(col_type, y + 17, acc_type)
-        painter.drawText(col_desc, y + 17, description or "")
+        x = margin
 
-        # Right aligned amounts
-        painter.drawText(col_amount, y + 17, f"{amount:,.2f}")
-        painter.drawText(col_balance, y + 17, f"{running_balance:,.2f}")
+        # Alternate row background
+        if index % 2 == 0:
+            painter.fillRect(
+                margin,
+                y,
+                sum(col_widths),
+                row_height,
+                QColor(245, 245, 245),
+            )
+
+        for i, cell in enumerate(row_data):
+
+            painter.drawRect(x, y, col_widths[i], row_height)
+
+            # Alignment rules
+            if i == 1:
+                alignment = Qt.AlignmentFlag.AlignCenter
+            elif i >= 3:
+                alignment = Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
+            else:
+                alignment = Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+
+            painter.drawText(
+                QRect(x + 5, y, col_widths[i] - 10, row_height),
+                alignment,
+                cell,
+            )
+
+            x += col_widths[i]
 
         y += row_height
 
-    y += 20
+    # ---------------- Summary Section ----------------
+    y += 40
     painter.drawLine(margin, y, page_width - margin, y)
-    y += 30
+    y += 60
 
-    # ---- Summary ----
     painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+
     painter.drawText(margin, y, f"Total Credit: {total_cr:,.2f}")
-    y += 20
+    y += 50
     painter.drawText(margin, y, f"Total Debit: {total_dr:,.2f}")
-    y += 20
+    y += 50
     painter.drawText(margin, y, f"Final Balance: {balance:,.2f}")
 
     painter.end()
