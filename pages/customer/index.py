@@ -18,6 +18,7 @@ import pandas as pd
 from datetime import datetime
 from PySide6.QtWidgets import QFileDialog
 from services.customer_account import get_customer_balance  # import balance function
+from services.customer_report import export_customer_pdf
 
 
 class CustomerList(QWidget):
@@ -125,9 +126,14 @@ class CustomerList(QWidget):
             delete_btn.setProperty("class", "danger")
             delete_btn.clicked.connect(partial(self.delete_customer, customer_id))
 
+            pdf_btn = QPushButton("PDF")
+            pdf_btn.setProperty("class", "primary")
+            pdf_btn.clicked.connect(partial(export_customer_pdf, self, customer_id))
+
             action_layout = QHBoxLayout()
             action_layout.addWidget(edit_btn)
             action_layout.addWidget(delete_btn)
+            action_layout.addWidget(pdf_btn)
             action_layout.setContentsMargins(0, 0, 0, 0)
 
             action_widget = QWidget()
