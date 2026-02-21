@@ -10,9 +10,9 @@ from PySide6.QtCore import Qt, QSize
 from pages.auth.login import LoginForm
 from pages.auth.dashboard import Dashboard
 from pages.customer.index import CustomerList
+from pages.customer_account.index import CustomerAccountList
 from services.auth import logout
 from config.theme import get_global_stylesheet
-from pages.customer_account.index import CustomerAccountList
 from config.app import APP_NAME
 
 
@@ -22,7 +22,7 @@ class MainApp(QWidget):
         self.setWindowTitle(APP_NAME)
         self.sidebar_expanded = True
 
-        # Apply global stylesheet once
+        # Apply global stylesheet
         self.setStyleSheet(get_global_stylesheet())
 
         self.init_ui()
@@ -39,66 +39,43 @@ class MainApp(QWidget):
         sidebar_layout = QVBoxLayout()
         sidebar_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        # Toggle button
-        self.toggle_btn = QPushButton("☰")
-        self.toggle_btn.clicked.connect(self.toggle_sidebar)
-        sidebar_layout.addWidget(self.toggle_btn)
+        # Menu buttons config: (label, icon, callback)
+        self.menu_buttons = [
+            ("☰", None, self.toggle_sidebar),
+            ("Dashboard", QStyle.StandardPixmap.SP_ComputerIcon, self.show_dashboard),
+            ("Customers", QStyle.StandardPixmap.SP_FileIcon, self.show_customers),
+            (
+                "Accounts",
+                QStyle.StandardPixmap.SP_DirOpenIcon,
+                self.show_customer_accounts,
+            ),
+            ("Logout", QStyle.StandardPixmap.SP_DialogCloseButton, self.handle_logout),
+        ]
 
-        # Menu buttons
-        self.dashboard_btn = QPushButton("Dashboard")
-        self.customer_btn = QPushButton("Customers")
-        self.customer_account_btn = QPushButton("Accounts")
-        self.logout_btn = QPushButton("Logout")
+        self.buttons = {}
+        for label, icon_enum, callback in self.menu_buttons:
+            btn = QPushButton(label)
+            if icon_enum:
+                btn.setIcon(self.style().standardIcon(icon_enum))
+                btn.setIconSize(QSize(20, 20))
+                btn.setMinimumHeight(40)
+            btn.clicked.connect(callback)
+            sidebar_layout.addWidget(btn)
+            self.buttons[label] = btn
 
-        # Set icons (Proper enum usage)
-        self.dashboard_btn.setIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_ComputerIcon)
-        )
-        self.customer_btn.setIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon)
-        )
-        self.customer_account_btn.setIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon)
-        )
-        self.logout_btn.setIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_DialogCloseButton)
-        )
-
-        # Optional: consistent icon size
-        for btn in [
-            self.dashboard_btn,
-            self.customer_btn,
-            self.customer_account_btn,
-            self.logout_btn,
-        ]:
-            btn.setIconSize(QSize(20, 20))
-            btn.setMinimumHeight(40)
-
-        # Connect buttons
-        self.dashboard_btn.clicked.connect(self.show_dashboard)
-        self.customer_btn.clicked.connect(self.show_customers)
-        self.customer_account_btn.clicked.connect(self.show_customer_accounts)
-        self.logout_btn.clicked.connect(self.handle_logout)
-
-        sidebar_layout.addWidget(self.dashboard_btn)
-        sidebar_layout.addWidget(self.customer_btn)
-        sidebar_layout.addWidget(self.customer_account_btn)
         sidebar_layout.addStretch()
-        sidebar_layout.addWidget(self.logout_btn)
-
         self.sidebar.setLayout(sidebar_layout)
 
         # ================= Content Area =================
         self.content = QFrame()
         self.content_layout = QVBoxLayout()
-
         self.content.setLayout(self.content_layout)
 
         main_layout.addWidget(self.sidebar)
         main_layout.addWidget(self.content)
 
-        main_layout.setContentsMargins(0, 0, 0, 0)  # remove extra padding
-        main_layout.setSpacing(0)  # remove spacing between pages
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
         self.setLayout(main_layout)
 
         self.show_dashboard()
@@ -109,31 +86,23 @@ class MainApp(QWidget):
     def toggle_sidebar(self):
         if self.sidebar_expanded:
             self.sidebar.setFixedWidth(60)
-            self.dashboard_btn.setText("")
-            self.customer_btn.setText("")
-            self.customer_account_btn.setText("")
-            self.logout_btn.setText("")
+            for label in ["Dashboard", "Customers", "Accounts", "Logout"]:
+                self.buttons[label].setText("")
         else:
             self.sidebar.setFixedWidth(200)
-            self.dashboard_btn.setText("Dashboard")
-            self.customer_btn.setText("Customers")
-            self.customer_account_btn.setText("Accounts")
-            self.logout_btn.setText("Logout")
-
+            for label in ["Dashboard", "Customers", "Accounts", "Logout"]:
+                self.buttons[label].setText(label)
         self.sidebar_expanded = not self.sidebar_expanded
 
     # ==================================================
     # Utility
     # ==================================================
-    def set_active_menu(self, button):
-        for btn in [self.dashboard_btn, self.customer_btn, self.customer_account_btn]:
-            btn.setProperty("active", False)
+    def set_active_menu(self, active_label):
+        for label in ["Dashboard", "Customers", "Accounts"]:
+            btn = self.buttons[label]
+            btn.setProperty("active", label == active_label)
             btn.style().unpolish(btn)
             btn.style().polish(btn)
-
-        button.setProperty("active", True)
-        button.style().unpolish(button)
-        button.style().polish(button)
 
     def clear_content(self):
         while self.content_layout.count():
@@ -146,27 +115,25 @@ class MainApp(QWidget):
     # ==================================================
     def show_dashboard(self):
         self.clear_content()
-        self.set_active_menu(self.dashboard_btn)
-        self.dashboard_page = Dashboard()
-        self.content_layout.addWidget(self.dashboard_page)
+        self.set_active_menu("Dashboard")
+        self.content_layout.addWidget(Dashboard())
 
     def show_customers(self):
         self.clear_content()
-        self.set_active_menu(self.customer_btn)
-        self.customer_page = CustomerList()
-        self.content_layout.addWidget(self.customer_page)
+        self.set_active_menu("Customers")
+        self.content_layout.addWidget(CustomerList())
 
     def show_customer_accounts(self):
         self.clear_content()
-        self.set_active_menu(self.customer_account_btn)
-        self.customer_account_page = CustomerAccountList()
-        self.content_layout.addWidget(self.customer_account_page)
+        self.set_active_menu("Accounts")
+        self.content_layout.addWidget(CustomerAccountList())
 
     # ==================================================
     # Login Handling
     # ==================================================
     def launch_login(self):
-        self.login_window = LoginForm(on_login_success=self.show_main)
+        self.login_window = LoginForm()
+        self.login_window.login_successful.connect(self.show_main)
         self.login_window.show()
 
     def show_main(self):
