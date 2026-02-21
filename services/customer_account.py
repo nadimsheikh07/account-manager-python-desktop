@@ -58,6 +58,27 @@ def delete_transaction(trx_id):
     conn.close()
 
 
+def get_monthly_account_summary():
+    """
+    Returns list of (YYYY-MM, total_cr, total_dr)
+    """
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    query = """
+        SELECT
+            strftime('%Y-%m', date) AS month,
+            SUM(CASE WHEN type='CR' THEN amount ELSE 0 END) AS total_cr,
+            SUM(CASE WHEN type='DR' THEN amount ELSE 0 END) AS total_dr
+        FROM customer_accounts
+        GROUP BY month
+        ORDER BY month ASC
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    conn.close()
+    return result
+
+
 def export_to_excel(self):
     from .customer import get_all_customers
 

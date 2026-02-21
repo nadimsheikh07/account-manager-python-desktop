@@ -5,6 +5,7 @@ from PySide6.QtGui import QPainter
 from services.auth import get_user_from_session
 from services.customer import get_monthly_customer_entries
 from datetime import datetime
+from pages.dashboard.accounts_chart import CustomerAccountsChart
 
 
 class Dashboard(QWidget):
@@ -24,6 +25,7 @@ class Dashboard(QWidget):
         layout.addWidget(self.create_title("Dashboard"))
         layout.addWidget(self.create_user_card())
         layout.addWidget(self.create_monthly_chart())
+        layout.addWidget(CustomerAccountsChart())  # new CR/DR chart
 
         self.setLayout(layout)
 
