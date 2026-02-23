@@ -45,11 +45,3 @@ class UserCard(QFrame):
         layout.addWidget(self.name_label)
         layout.addWidget(self.email_label)
         self.setLayout(layout)
-
-    # Optional: Refresh user data dynamically
-    def refresh(self):
-        self.user = get_user_from_session() or {}
-        username = self.user.get("username", "Guest")
-        email = self.user.get("email", "Not logged in")
-        self.name_label.setText(f"👤 Name: {username}")
-        self.email_label.setText(f"📧 Email: {email}")

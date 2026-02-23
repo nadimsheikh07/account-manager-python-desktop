@@ -16,6 +16,7 @@ from services.customer import get_all_customers, delete_customer, export_to_exce
 from pages.customer.form import CustomerForm
 from services.customer_account import get_customer_balance
 from services.customer_report import export_customer_pdf
+from components.heading import create_title
 
 
 class CustomerList(QWidget):
@@ -34,6 +35,7 @@ class CustomerList(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
+        layout.addWidget(create_title("Customers"))
 
         # ===== Top Bar =====
         top_layout = QHBoxLayout()

@@ -20,6 +20,7 @@ from services.customer_account import (
 )
 from pages.customer_account.form import CustomerAccountForm
 from datetime import datetime
+from components.heading import create_title
 
 
 class CustomerAccountList(QWidget):
@@ -35,6 +36,7 @@ class CustomerAccountList(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
+        layout.addWidget(create_title("Customer Accounts"))
 
         # ===== Top Bar =====
         top_layout = QHBoxLayout()
