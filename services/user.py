@@ -35,7 +35,7 @@ def getUser(user_id):
     return row  # (id, name, email, contact, address, date) or None
 
 
-def getAllUsers():
+def getAllUsers(type="user"):
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -43,8 +43,9 @@ def getAllUsers():
     cursor.execute(
         """
         SELECT id, name, email, contact, address, date, type
-        FROM users
-    """
+        FROM users WHERE type=?
+    """,
+        (type,),
     )
 
     rows = cursor.fetchall()

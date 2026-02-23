@@ -17,6 +17,7 @@ from pages.user.form import UserForm
 from services.userAccount import getUserBalance
 from services.userReport import exportUserPdf
 from components.heading import createTitle
+from PySide6.QtWidgets import QTabWidget
 
 
 class UserList(QWidget):
@@ -63,6 +64,17 @@ class UserList(QWidget):
         top_layout.addWidget(self.export_btn)
         layout.addLayout(top_layout)
 
+        # ===== Tabs =====
+        self.tabs = QTabWidget()
+        self.tabs.addTab(QWidget(), "Users")
+        self.tabs.addTab(QWidget(), "Employees")
+        self.tabs.addTab(QWidget(), "Customers")
+        self.tabs.addTab(QWidget(), "Suppliers")
+
+        self.tabs.currentChanged.connect(self.load_data)
+
+        layout.addWidget(self.tabs)
+
         # ===== Table =====
         self.table = QTableWidget()
         self.table.setColumnCount(8)
@@ -84,14 +96,29 @@ class UserList(QWidget):
         self.setLayout(layout)
 
     # =========================
+
     # Load Data
     # =========================
     def load_data(self):
         self.table.setSortingEnabled(False)
-        all_users = getAllUsers()
+
+        # Get selected tab text
+        current_tab = self.tabs.tabText(self.tabs.currentIndex()).lower()
+
+        # Map tab labels to database types
+        type_map = {
+            "users": "user",
+            "employees": "employee",
+            "customers": "customer",
+            "suppliers": "supplier",
+        }
+        selected_type = type_map.get(current_tab, "user")
+
+        # Fetch data
+        all_users = getAllUsers(selected_type)
         query = self.search_input.text().lower()
 
-        # Filter safely using dictionary access
+        # Filter safely
         filtered = [
             user
             for user in all_users
@@ -111,7 +138,6 @@ class UserList(QWidget):
             contact = user["contact"]
             address = user["address"]
             date = user["date"]
-            user_type = user["type"]
 
             balance = getUserBalance(user_id)
 
@@ -130,7 +156,7 @@ class UserList(QWidget):
                 item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
                 self.table.setItem(row_idx, col_idx, item)
 
-            # ===== Action Buttons =====
+            # Action buttons
             edit_btn = QPushButton("Edit")
             edit_btn.setProperty("class", "primary")
             edit_btn.clicked.connect(partial(self.edit_user, user_id))
