@@ -8,7 +8,7 @@ from components.sidebar import Sidebar
 from pages.auth.login import LoginForm
 from pages.auth.dashboard import Dashboard
 from pages.customer.index import CustomerList
-from pages.customer_account.index import CustomerAccountList
+from pages.customerAccount.index import CustomerAccountList
 from services.auth import logout
 from config.theme import getGlobalStylesheet
 from config.app import APP_NAME

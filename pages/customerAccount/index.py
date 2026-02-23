@@ -18,7 +18,7 @@ from services.customerAccount import (
     deleteTransaction,  # we’ll assume we add this to the service
     exportToExcel,
 )
-from pages.customer_account.form import CustomerAccountForm
+from pages.customerAccount.form import CustomerAccountForm
 from datetime import datetime
 from components.heading import createTitle
 

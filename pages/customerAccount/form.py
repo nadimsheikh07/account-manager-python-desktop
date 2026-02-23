@@ -1,5 +1,3 @@
-# pages/customer_account/form.py
-
 from PySide6.QtWidgets import (
     QWidget,
     QLabel,
