@@ -1,6 +1,6 @@
 import sys
-from PySide6.QtWidgets import QApplication, QSplashScreen
-from PySide6.QtCore import Qt, QTimer, Signal, QObject
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QTimer, QObject
 from pages.auth.login import LoginForm
 from main import MainApp
 from services.auth import get_current_session
