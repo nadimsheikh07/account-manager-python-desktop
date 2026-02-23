@@ -11,19 +11,19 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from functools import partial
-from config.theme import get_global_stylesheet
-from services.customer import get_all_customers, delete_customer, export_to_excel
+from config.theme import getGlobalStylesheet
+from services.customer import getAllCustomers, delete_customer, exportToExcel
 from pages.customer.form import CustomerForm
-from services.customer_account import get_customer_balance
-from services.customer_report import export_customer_pdf
-from components.heading import create_title
+from services.customerAccount import getCustomerBalance
+from services.customerReport import exportCustomerPdf
+from components.heading import createTitle
 
 
 class CustomerList(QWidget):
     def __init__(self):
         super().__init__()
         self.setMinimumSize(600, 400)
-        self.setStyleSheet(get_global_stylesheet())
+        self.setStyleSheet(getGlobalStylesheet())
 
         self.init_ui()
         self.load_data()
@@ -35,7 +35,7 @@ class CustomerList(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
-        layout.addWidget(create_title("Customers"))
+        layout.addWidget(createTitle("Customers"))
 
         # ===== Top Bar =====
         top_layout = QHBoxLayout()
@@ -56,7 +56,7 @@ class CustomerList(QWidget):
         self.export_btn = QPushButton("Export to Excel")
         self.export_btn.setProperty("class", "primary")
         self.export_btn.setMinimumHeight(36)
-        self.export_btn.clicked.connect(lambda: export_to_excel(self))
+        self.export_btn.clicked.connect(lambda: exportToExcel(self))
 
         top_layout.addWidget(self.search_input)
         top_layout.addWidget(self.add_btn)
@@ -88,7 +88,7 @@ class CustomerList(QWidget):
     # =========================
     def load_data(self):
         self.table.setSortingEnabled(False)
-        all_customers = get_all_customers()
+        all_customers = getAllCustomers()
         query = self.search_input.text().lower()
 
         # Filter by name, email, contact, address, or date
@@ -106,7 +106,7 @@ class CustomerList(QWidget):
 
         for row_idx, customer in enumerate(filtered):
             customer_id, name, email, contact, address, date = customer
-            balance = get_customer_balance(customer_id)
+            balance = getCustomerBalance(customer_id)
 
             row_values = [
                 customer_id,
@@ -134,7 +134,7 @@ class CustomerList(QWidget):
 
             pdf_btn = QPushButton("PDF")
             pdf_btn.setProperty("class", "primary")
-            pdf_btn.clicked.connect(partial(export_customer_pdf, self, customer_id))
+            pdf_btn.clicked.connect(partial(exportCustomerPdf, self, customer_id))
 
             action_layout = QHBoxLayout()
             action_layout.addWidget(edit_btn)

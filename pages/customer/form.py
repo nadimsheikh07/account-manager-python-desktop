@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from services.customer import add_customer, get_customer, update_customer
-from config.theme import get_global_stylesheet
+from config.theme import getGlobalStylesheet
 
 
 class CustomerForm(QWidget):
@@ -23,7 +23,7 @@ class CustomerForm(QWidget):
         self.refresh_callback = refresh_callback
         self.setWindowTitle("Customer Form")
         self.setMinimumSize(400, 350)
-        self.setStyleSheet(get_global_stylesheet())
+        self.setStyleSheet(getGlobalStylesheet())
         self.init_ui()
 
         if self.customer_id:

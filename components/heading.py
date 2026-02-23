@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QLabel
 # =============================
 # Title Component
 # =============================
-def create_title(text: str) -> QLabel:
+def createTitle(text: str) -> QLabel:
     title = QLabel(text)
     title.setStyleSheet(
         """

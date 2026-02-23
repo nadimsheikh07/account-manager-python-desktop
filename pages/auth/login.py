@@ -8,13 +8,13 @@ from PySide6.QtWidgets import (
     QFrame,
 )
 from PySide6.QtCore import Qt, Signal
-from services.auth import authenticate_user, create_session
-from config.theme import get_global_stylesheet
-from utils.form_utils import set_error
+from services.auth import authenticateUser, createSession
+from config.theme import getGlobalStylesheet
+from utils.formUtils import setError
 
 
 class LoginForm(QWidget):
-    login_successful = Signal()  # Use signal instead of callback
+    loginSuccessful = Signal()  # Use signal instead of callback
 
     def __init__(self):
         super().__init__()
@@ -23,7 +23,7 @@ class LoginForm(QWidget):
 
         # Apply global stylesheet + base validation styles
         self.setStyleSheet(
-            get_global_stylesheet()
+            getGlobalStylesheet()
             + """
             QWidget { background-color: #f4f6f9; }
         """
@@ -116,7 +116,7 @@ class LoginForm(QWidget):
         return input_field, error_label
 
     def clear_error(self, input_field, error_label):
-        set_error(False, input_field)
+        setError(False, input_field)
         error_label.setVisible(False)
 
     # ==============================
@@ -129,13 +129,13 @@ class LoginForm(QWidget):
         valid = True
 
         if not username:
-            set_error(True, self.username_input)
+            setError(True, self.username_input)
             self.username_error_label.setText("Username is required")
             self.username_error_label.setVisible(True)
             valid = False
 
         if not password:
-            set_error(True, self.password_input)
+            setError(True, self.password_input)
             self.password_error_label.setText("Password is required")
             self.password_error_label.setVisible(True)
             valid = False
@@ -154,12 +154,12 @@ class LoginForm(QWidget):
             QMessageBox.warning(self, "Validation Error", "All fields are required.")
             return
 
-        if authenticate_user(username, password):
-            create_session(username)
+        if authenticateUser(username, password):
+            createSession(username)
             QMessageBox.information(self, "Login", "Login successful!")
-            self.login_successful.emit()  # emit signal
+            self.loginSuccessful.emit()  # emit signal
             self.close()
         else:
             for input_field in [self.username_input, self.password_input]:
-                set_error(True, input_field)
+                setError(True, input_field)
             QMessageBox.warning(self, "Login Failed", "Invalid username or password.")

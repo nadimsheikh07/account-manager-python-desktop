@@ -12,7 +12,7 @@ TEXT_DARK = "#2c3e50"
 BORDER_COLOR = "#ccc"  # light gray for borders
 
 
-def get_global_stylesheet():
+def getGlobalStylesheet():
     return f"""
         QWidget {{
             background-color: {BACKGROUND_COLOR};

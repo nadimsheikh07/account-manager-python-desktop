@@ -11,23 +11,23 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from functools import partial
-from config.theme import get_global_stylesheet
-from services.customer import get_all_customers
-from services.customer_account import (
-    get_customer_transactions,
-    delete_transaction,  # we’ll assume we add this to the service
-    export_to_excel,
+from config.theme import getGlobalStylesheet
+from services.customer import getAllCustomers
+from services.customerAccount import (
+    getCustomerTransactions,
+    deleteTransaction,  # we’ll assume we add this to the service
+    exportToExcel,
 )
 from pages.customer_account.form import CustomerAccountForm
 from datetime import datetime
-from components.heading import create_title
+from components.heading import createTitle
 
 
 class CustomerAccountList(QWidget):
     def __init__(self):
         super().__init__()
         self.setMinimumSize(700, 500)
-        self.setStyleSheet(get_global_stylesheet())
+        self.setStyleSheet(getGlobalStylesheet())
 
         self.init_ui()
         self.load_data()
@@ -36,7 +36,7 @@ class CustomerAccountList(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
-        layout.addWidget(create_title("Customer Accounts"))
+        layout.addWidget(createTitle("Customer Accounts"))
 
         # ===== Top Bar =====
         top_layout = QHBoxLayout()
@@ -57,7 +57,7 @@ class CustomerAccountList(QWidget):
         self.export_btn = QPushButton("Export to Excel")
         self.export_btn.setProperty("class", "primary")
         self.export_btn.setMinimumHeight(36)
-        self.export_btn.clicked.connect(lambda: export_to_excel(self))
+        self.export_btn.clicked.connect(lambda: exportToExcel(self))
         top_layout.addWidget(self.search_input)
         top_layout.addWidget(self.add_btn)
         top_layout.addWidget(self.export_btn)
@@ -91,7 +91,7 @@ class CustomerAccountList(QWidget):
     # =========================
     def load_data(self):
         self.table.setSortingEnabled(False)
-        all_customers = get_all_customers()
+        all_customers = getAllCustomers()
         query = self.search_input.text().lower()
 
         # Filter customers
@@ -107,7 +107,7 @@ class CustomerAccountList(QWidget):
         all_rows = []
         for c in filtered_customers:
             customer_id, name, email, _, _, _ = c
-            transactions = get_customer_transactions(customer_id)
+            transactions = getCustomerTransactions(customer_id)
 
             # Sort transactions by date (and optionally by ID)
             transactions.sort(
@@ -175,7 +175,7 @@ class CustomerAccountList(QWidget):
 
             delete_btn = QPushButton("Delete")
             delete_btn.setProperty("class", "danger")
-            delete_btn.clicked.connect(partial(self.delete_transaction, trx_id))
+            delete_btn.clicked.connect(partial(self.deleteTransaction, trx_id))
 
             action_layout = QHBoxLayout()
             action_layout.addWidget(edit_btn)
@@ -207,7 +207,7 @@ class CustomerAccountList(QWidget):
         )
         self.account_form.show()
 
-    def delete_transaction(self, trx_id):
+    def deleteTransaction(self, trx_id):
         confirm = QMessageBox.question(
             self,
             "Confirm Delete",
@@ -215,7 +215,7 @@ class CustomerAccountList(QWidget):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
-            delete_transaction(trx_id)
+            deleteTransaction(trx_id)
             QMessageBox.information(
                 self, "Deleted", "Transaction deleted successfully."
             )

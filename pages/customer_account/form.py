@@ -11,9 +11,9 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from PySide6.QtCore import Qt
-from services.customer_account import add_transaction, get_customer_balance
-from services.customer import get_all_customers
-from config.theme import get_global_stylesheet
+from services.customerAccount import addTransaction, getCustomerBalance
+from services.customer import getAllCustomers
+from config.theme import getGlobalStylesheet
 
 
 class CustomerAccountForm(QWidget):
@@ -27,7 +27,7 @@ class CustomerAccountForm(QWidget):
         self.refresh_callback = refresh_callback
         self.setWindowTitle("Customer Account Form")
         self.setMinimumSize(400, 320)
-        self.setStyleSheet(get_global_stylesheet())
+        self.setStyleSheet(getGlobalStylesheet())
         self.init_ui()
 
     def init_ui(self):
@@ -101,7 +101,7 @@ class CustomerAccountForm(QWidget):
     def load_customers(self):
         """Load all customers into the dropdown"""
         self.customer_dropdown.clear()
-        customers = get_all_customers()
+        customers = getAllCustomers()
         for c in customers:
             customer_id, name, email, _, _, _ = c
             display_text = f"{name} ({email})"
@@ -111,7 +111,7 @@ class CustomerAccountForm(QWidget):
         """Update current balance display for selected customer"""
         customer_id = self.customer_dropdown.currentData()
         if customer_id:
-            balance = get_customer_balance(customer_id)
+            balance = getCustomerBalance(customer_id)
             self.balance_label.setText(f"{balance:.2f}")
         else:
             self.balance_label.setText("0.00")
@@ -137,7 +137,7 @@ class CustomerAccountForm(QWidget):
             return
 
         try:
-            add_transaction(customer_id, amount, type_, description)
+            addTransaction(customer_id, amount, type_, description)
             QMessageBox.information(self, "Success", "Transaction added successfully.")
             self.refresh_callback()
             self.close()

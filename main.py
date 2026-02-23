@@ -10,7 +10,7 @@ from pages.auth.dashboard import Dashboard
 from pages.customer.index import CustomerList
 from pages.customer_account.index import CustomerAccountList
 from services.auth import logout
-from config.theme import get_global_stylesheet
+from config.theme import getGlobalStylesheet
 from config.app import APP_NAME
 
 
@@ -19,7 +19,7 @@ class MainApp(QWidget):
         super().__init__()
         self.setWindowTitle(APP_NAME)
 
-        self.setStyleSheet(get_global_stylesheet())
+        self.setStyleSheet(getGlobalStylesheet())
 
         self.init_ui()
         self.showMaximized()
@@ -80,7 +80,7 @@ class MainApp(QWidget):
     # ==========================================
     def launch_login(self):
         self.login_window = LoginForm()
-        self.login_window.login_successful.connect(self.show_main)
+        self.login_window.loginSuccessful.connect(self.show_main)
         self.login_window.show()
 
     def show_main(self):

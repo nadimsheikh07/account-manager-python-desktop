@@ -8,7 +8,7 @@ import pandas as pd
 from datetime import datetime
 
 
-def add_transaction(customer_id, amount, type, description=None):
+def addTransaction(customer_id, amount, type, description=None):
     """Add a credit (CR) or debit (DR) transaction for a customer"""
     if type not in ("CR", "DR"):
         raise ValueError("Type must be 'CR' or 'DR'")
@@ -23,7 +23,7 @@ def add_transaction(customer_id, amount, type, description=None):
     conn.close()
 
 
-def get_customer_transactions(customer_id):
+def getCustomerTransactions(customer_id):
     """Fetch all transactions of a customer"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -36,7 +36,7 @@ def get_customer_transactions(customer_id):
     return rows  # list of tuples
 
 
-def get_customer_balance(customer_id):
+def getCustomerBalance(customer_id):
     """Calculate total balance for a customer (CR - DR)"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -49,7 +49,7 @@ def get_customer_balance(customer_id):
     return balance or 0.0
 
 
-def delete_transaction(trx_id):
+def deleteTransaction(trx_id):
     """Delete a transaction by its ID"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -58,7 +58,7 @@ def delete_transaction(trx_id):
     conn.close()
 
 
-def get_monthly_account_summary():
+def getMonthlyAccountSummary():
     """
     Returns list of (YYYY-MM, total_cr, total_dr)
     """
@@ -79,10 +79,10 @@ def get_monthly_account_summary():
     return result
 
 
-def export_to_excel(self):
-    from .customer import get_all_customers
+def exportToExcel(self):
+    from .customer import getAllCustomers
 
-    all_customers = get_all_customers()
+    all_customers = getAllCustomers()
     query = self.search_input.text().lower()
 
     # Filter customers
@@ -98,7 +98,7 @@ def export_to_excel(self):
     all_rows = []
     for c in filtered_customers:
         customer_id, name, email, _, _, _ = c
-        transactions = get_customer_transactions(customer_id)
+        transactions = getCustomerTransactions(customer_id)
         running_balance = 0.0
         for t in transactions:
             trx_id, trx_type, amount, description, date = t

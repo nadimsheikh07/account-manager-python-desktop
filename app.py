@@ -3,9 +3,9 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer, QObject
 from pages.auth.login import LoginForm
 from main import MainApp
-from services.auth import get_current_session
+from services.auth import getCurrentSession
 from services.dbSetup import init_db
-from splash import show_splash
+from splash import showSplash
 
 
 class AppLauncher(QObject):
@@ -18,7 +18,7 @@ class AppLauncher(QObject):
     def __init__(self, app):
         super().__init__()
         self.app = app
-        self.splash = show_splash(app)
+        self.splash = showSplash(app)
         self.main_window = None
         self.login_window = None
 
@@ -27,26 +27,26 @@ class AppLauncher(QObject):
 
     def launch_app(self):
         # Check current session
-        user = get_current_session()
+        user = getCurrentSession()
         self.splash.close()
 
         if user:
-            self.show_main()
+            self.showMain()
         else:
-            self.show_login()
+            self.showLogin()
 
-    def show_main(self):
+    def showMain(self):
         self.main_window = MainApp()
         self.main_window.show()
 
-    def show_login(self):
+    def showLogin(self):
         self.login_window = LoginForm()
-        self.login_window.login_successful.connect(self.on_login_success)
+        self.login_window.loginSuccessful.connect(self.onLoginSuccess)
         self.login_window.show()
 
-    def on_login_success(self):
+    def onLoginSuccess(self):
         self.login_window.close()
-        self.show_main()
+        self.showMain()
 
 
 def main():

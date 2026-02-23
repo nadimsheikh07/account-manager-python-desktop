@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter
-from services.customer_account import get_monthly_account_summary  # custom function
+from services.customerAccount import getMonthlyAccountSummary  # custom function
 
 
 class CustomerAccountsChart(QWidget):
@@ -31,7 +31,7 @@ class CustomerAccountsChart(QWidget):
     def create_chart(self) -> QChartView:
         # Fetch monthly account summary from DB
         # Expected format: [(YYYY-MM, total_cr, total_dr), ...]
-        monthly_data = get_monthly_account_summary()
+        monthly_data = getMonthlyAccountSummary()
 
         cr_set = QBarSet("Credit (CR)")
         dr_set = QBarSet("Debit (DR)")

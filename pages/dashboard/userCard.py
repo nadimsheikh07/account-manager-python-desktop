@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel
 from PySide6.QtCore import Qt
-from services.auth import get_user_from_session
+from services.auth import getUserFromSession
 
 
 class UserCard(QFrame):
@@ -10,7 +10,7 @@ class UserCard(QFrame):
 
     def __init__(self):
         super().__init__()
-        self.user = get_user_from_session() or {}
+        self.user = getUserFromSession() or {}
         self.init_ui()
 
     def init_ui(self):

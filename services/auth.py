@@ -3,7 +3,7 @@ from config.db import DB_FILE
 import bcrypt
 
 
-def authenticate_user(username, password):
+def authenticateUser(username, password):
     """Check SQLite for user"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -18,7 +18,7 @@ def authenticate_user(username, password):
     return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
 
 
-def create_user(username, password):
+def createUser(username, password):
     """Create a new user with hashed password"""
     hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
     conn = sqlite3.connect(DB_FILE)
@@ -35,7 +35,7 @@ def create_user(username, password):
         conn.close()
 
 
-def create_session(username):
+def createSession(username):
     """Store current logged-in user in session table"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -45,7 +45,7 @@ def create_session(username):
     conn.close()
 
 
-def get_current_session():
+def getCurrentSession():
     """Return username if session exists, else None"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -64,7 +64,7 @@ def logout():
     conn.close()
 
 
-def get_user_from_session():
+def getUserFromSession():
     """
     Return full user data from active session.
     Returns dictionary or None.

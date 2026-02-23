@@ -35,7 +35,7 @@ def get_customer(customer_id):
     return row  # (id, name, email, contact, address, date) or None
 
 
-def get_all_customers():
+def getAllCustomers():
     """Fetch all customers ordered by newest first"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -116,10 +116,10 @@ def get_monthly_customer_entries():
     return rows  # [('2026-01', 12), ('2026-02', 7)]
 
 
-def export_to_excel(self):
-    from .customer_account import get_customer_balance  # import balance function
+def exportToExcel(self):
+    from .customerAccount import getCustomerBalance  # import balance function
 
-    all_customers = get_all_customers()
+    all_customers = getAllCustomers()
     if not all_customers:
         QMessageBox.warning(self, "No Data", "There are no customers to export.")
         return
@@ -128,7 +128,7 @@ def export_to_excel(self):
     export_rows = []
     for c in all_customers:
         customer_id, name, email, contact, address, date = c
-        balance = get_customer_balance(customer_id)
+        balance = getCustomerBalance(customer_id)
         export_rows.append(
             {
                 "ID": customer_id,

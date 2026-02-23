@@ -1,12 +1,9 @@
 import sqlite3
 from config.db import DB_FILE
-from PySide6.QtGui import QPdfWriter, QPainter, QFont, QColor, QPageSize
-from PySide6.QtCore import QRect, Qt
-from PySide6.QtWidgets import QFileDialog
-from utils.pdf_utils import PDFExporter
+from utils.pdfUtils import PDFExporter
 
 
-def get_customer_with_accounts(customer_id):
+def getCustomerWithAccounts(customer_id):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
@@ -37,8 +34,8 @@ def get_customer_with_accounts(customer_id):
     return customer, accounts, total_cr, total_dr, balance
 
 
-def export_customer_pdf(parent, customer_id):
-    data = get_customer_with_accounts(customer_id)
+def exportCustomerPdf(parent, customer_id):
+    data = getCustomerWithAccounts(customer_id)
     if not data:
         return
 

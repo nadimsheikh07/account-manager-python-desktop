@@ -1,4 +1,3 @@
-# pdf_utils.py
 from PySide6.QtGui import QPdfWriter, QPainter, QFont, QColor, QPageSize
 from PySide6.QtCore import QRect, Qt
 from PySide6.QtWidgets import QFileDialog

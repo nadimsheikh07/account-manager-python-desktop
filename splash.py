@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, QTimer
 from config.theme import PRIMARY_COLOR, TEXT_DARK
 
 
-def show_splash(app, duration=2000, logo_path="icon.ico"):
+def showSplash(app, duration=2000, logo_path="icon.ico"):
     """Show a themed splash screen with logo for `duration` milliseconds"""
     width, height = 500, 300
 
