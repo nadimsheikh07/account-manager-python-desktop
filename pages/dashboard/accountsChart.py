@@ -2,10 +2,10 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter
-from services.customerAccount import getMonthlyAccountSummary  # custom function
+from services.userAccount import getMonthlyAccountSummary  # custom function
 
 
-class CustomerAccountsChart(QWidget):
+class UserAccountsChart(QWidget):
     """
     Chart showing monthly Credit (CR) and Debit (DR) totals.
     """
@@ -19,7 +19,7 @@ class CustomerAccountsChart(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setSpacing(10)
 
-        title = QLabel("Monthly Customer Accounts")
+        title = QLabel("Monthly User Accounts")
         title.setStyleSheet("font-size: 18px; font-weight: bold;")
         layout.addWidget(title)
 

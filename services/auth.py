@@ -4,18 +4,29 @@ import bcrypt
 
 
 def authenticateUser(username, password):
-    """Check SQLite for user"""
+    """Authenticate user and create session if valid"""
+
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("SELECT password FROM users WHERE username=?", (username,))
+
+    cursor.execute(
+        "SELECT id, password FROM users WHERE username=?",
+        (username,),
+    )
     row = cursor.fetchone()
     conn.close()
 
     if not row:
         return False
 
-    stored_hash = row[0]
-    return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
+    user_id = row[0]
+    stored_hash = row[1]
+
+    if bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8")):
+        createSession(user_id)
+        return True
+
+    return False
 
 
 def createUser(username, password):
@@ -35,21 +46,21 @@ def createUser(username, password):
         conn.close()
 
 
-def createSession(username):
+def createSession(user_id):
     """Store current logged-in user in session table"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM session")  # remove old session
-    cursor.execute("INSERT INTO session (username) VALUES (?)", (username,))
+    cursor.execute("INSERT INTO session (user_id) VALUES (?)", (user_id,))
     conn.commit()
     conn.close()
 
 
 def getCurrentSession():
-    """Return username if session exists, else None"""
+    """Return user_id if session exists, else None"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("SELECT username FROM session LIMIT 1")
+    cursor.execute("SELECT user_id FROM session LIMIT 1")
     result = cursor.fetchone()
     conn.close()
     return result[0] if result else None
@@ -76,9 +87,9 @@ def getUserFromSession():
     try:
         cursor.execute(
             """
-            SELECT u.username, u.email
+            SELECT u.id, u.name, u.email
             FROM users u
-            INNER JOIN session s ON u.username = s.username
+            INNER JOIN session s ON u.id = s.user_id
             LIMIT 1
         """
         )
@@ -87,7 +98,7 @@ def getUserFromSession():
 
         if row:
             return {
-                "username": row["username"],
+                "name": row["name"],
                 "email": row["email"],
             }
 

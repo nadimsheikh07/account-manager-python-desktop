@@ -8,13 +8,13 @@ from PySide6.QtWidgets import (
 from datetime import datetime
 
 
-def add_customer(name, email, contact=None, address=None):
-    """Add a new customer"""
+def addUser(name, email, contact=None, address=None):
+    """Add a new user"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     try:
         cursor.execute(
-            "INSERT INTO customers (name, email, contact, address) VALUES (?, ?, ?, ?)",
+            "INSERT INTO users (name, email, contact, address) VALUES (?, ?, ?, ?)",
             (name, email, contact, address),
         )
         conn.commit()
@@ -25,28 +25,35 @@ def add_customer(name, email, contact=None, address=None):
         conn.close()
 
 
-def get_customer(customer_id):
-    """Fetch customer by ID"""
+def getUser(user_id):
+    """Fetch user by ID"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM customers WHERE id=?", (customer_id,))
+    cursor.execute("SELECT * FROM users WHERE id=?", (user_id,))
     row = cursor.fetchone()
     conn.close()
     return row  # (id, name, email, contact, address, date) or None
 
 
-def getAllCustomers():
-    """Fetch all customers ordered by newest first"""
+def getAllUsers():
     conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM customers ORDER BY date DESC")
+
+    cursor.execute(
+        """
+        SELECT id, name, email, contact, address, date, type
+        FROM users
+    """
+    )
+
     rows = cursor.fetchall()
     conn.close()
     return rows
 
 
-def update_customer(customer_id, name=None, email=None, contact=None, address=None):
-    """Update customer details. Only provided fields are updated"""
+def updateUser(user_id, name=None, email=None, contact=None, address=None):
+    """Update user details. Only provided fields are updated"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
@@ -73,8 +80,8 @@ def update_customer(customer_id, name=None, email=None, contact=None, address=No
         conn.close()
         return False  # nothing to update
 
-    values.append(customer_id)
-    query = f"UPDATE customers SET {', '.join(fields)} WHERE id=?"
+    values.append(user_id)
+    query = f"UPDATE users SET {', '.join(fields)} WHERE id=?"
 
     try:
         cursor.execute(query, tuple(values))
@@ -86,16 +93,16 @@ def update_customer(customer_id, name=None, email=None, contact=None, address=No
         conn.close()
 
 
-def delete_customer(customer_id):
-    """Delete a customer by ID"""
+def delete_user(user_id):
+    """Delete a user by ID"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM customers WHERE id=?", (customer_id,))
+    cursor.execute("DELETE FROM users WHERE id=?", (user_id,))
     conn.commit()
     conn.close()
 
 
-def get_monthly_customer_entries():
+def getMonthlyUserEntries():
     """Return list of (YYYY-MM, count)"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -104,7 +111,7 @@ def get_monthly_customer_entries():
         """
         SELECT strftime('%Y-%m', date) as year_month,
                COUNT(*) as total
-        FROM customers
+        FROM users
         WHERE date IS NOT NULL
         GROUP BY year_month
         ORDER BY year_month
@@ -117,21 +124,27 @@ def get_monthly_customer_entries():
 
 
 def exportToExcel(self):
-    from .customerAccount import getCustomerBalance  # import balance function
+    from .userAccount import getUserBalance  # import balance function
 
-    all_customers = getAllCustomers()
-    if not all_customers:
-        QMessageBox.warning(self, "No Data", "There are no customers to export.")
+    all_users = getAllUsers()
+    if not all_users:
+        QMessageBox.warning(self, "No Data", "There are no users to export.")
         return
 
-    # Add balance for each customer
+    # Add balance for each user
     export_rows = []
-    for c in all_customers:
-        customer_id, name, email, contact, address, date = c
-        balance = getCustomerBalance(customer_id)
+    for user in all_users:
+        user_id = user["id"]
+        name = user["name"]
+        email = user["email"]
+        contact = user["contact"]
+        address = user["address"]
+        date = user["date"]
+        type = user["type"]
+        balance = getUserBalance(user_id)
         export_rows.append(
             {
-                "ID": customer_id,
+                "ID": user_id,
                 "Name": name,
                 "Email": email,
                 "Contact": contact,
@@ -147,11 +160,11 @@ def exportToExcel(self):
     file_path, _ = QFileDialog.getSaveFileName(
         self,
         "Save Excel File",
-        f"customers_{now}.xlsx",
+        f"users_{now}.xlsx",
         "Excel Files (*.xlsx)",
     )
     if file_path:
         df.to_excel(file_path, index=False)
         QMessageBox.information(
-            self, "Exported", f"Customers exported successfully to:\n{file_path}"
+            self, "Exported", f"users exported successfully to:\n{file_path}"
         )

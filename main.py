@@ -7,8 +7,8 @@ from PySide6.QtWidgets import (
 from components.sidebar import Sidebar
 from pages.auth.login import LoginForm
 from pages.auth.dashboard import Dashboard
-from pages.customer.index import CustomerList
-from pages.customerAccount.index import CustomerAccountList
+from pages.user.index import UserList
+from pages.userAccount.index import UserAccountList
 from services.auth import logout
 from config.theme import getGlobalStylesheet
 from config.app import APP_NAME
@@ -32,8 +32,8 @@ class MainApp(QWidget):
 
         # Connect sidebar signals
         self.sidebar.dashboard_clicked.connect(self.show_dashboard)
-        self.sidebar.customers_clicked.connect(self.show_customers)
-        self.sidebar.accounts_clicked.connect(self.show_customer_accounts)
+        self.sidebar.users_clicked.connect(self.show_users)
+        self.sidebar.accounts_clicked.connect(self.show_user_accounts)
         self.sidebar.logout_clicked.connect(self.handle_logout)
 
         # ================= Content =================
@@ -65,15 +65,15 @@ class MainApp(QWidget):
         self.sidebar.set_active("Dashboard")
         self.content_layout.addWidget(Dashboard())
 
-    def show_customers(self):
+    def show_users(self):
         self.clear_content()
-        self.sidebar.set_active("Customers")
-        self.content_layout.addWidget(CustomerList())
+        self.sidebar.set_active("Users")
+        self.content_layout.addWidget(UserList())
 
-    def show_customer_accounts(self):
+    def show_user_accounts(self):
         self.clear_content()
         self.sidebar.set_active("Accounts")
-        self.content_layout.addWidget(CustomerAccountList())
+        self.content_layout.addWidget(UserAccountList())
 
     # ==========================================
     # Login Handling

@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Qt
 from services.auth import getUserFromSession
-from pages.dashboard.accountsChart import CustomerAccountsChart
-from pages.dashboard.monthlyCustomersChart import MonthlyCustomersChart
+from pages.dashboard.accountsChart import UserAccountsChart
+from pages.dashboard.monthlyUsersChart import MonthlyUsersChart
 from pages.dashboard.userCard import UserCard
 from components.heading import createTitle
 
@@ -23,8 +23,8 @@ class Dashboard(QWidget):
 
         layout.addWidget(createTitle("Dashboard"))
 
-        layout.addWidget(UserCard())  # New customers chart
-        layout.addWidget(MonthlyCustomersChart())  # New customers chart
-        layout.addWidget(CustomerAccountsChart())  # new CR/DR chart
+        layout.addWidget(UserCard())  # New users chart
+        layout.addWidget(MonthlyUsersChart())  # New users chart
+        layout.addWidget(UserAccountsChart())  # new CR/DR chart
 
         self.setLayout(layout)

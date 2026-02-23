@@ -8,26 +8,26 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from PySide6.QtCore import Qt
-from services.customer import add_customer, get_customer, update_customer
+from services.user import addUser, getUser, updateUser
 from config.theme import getGlobalStylesheet
 
 
-class CustomerForm(QWidget):
-    def __init__(self, refresh_callback, customer_id=None):
+class UserForm(QWidget):
+    def __init__(self, refresh_callback, user_id=None):
         """
-        customer_id=None -> Create new
+        user_id=None -> Create new
         refresh_callback -> function to refresh the list after save
         """
         super().__init__()
-        self.customer_id = customer_id
+        self.user_id = user_id
         self.refresh_callback = refresh_callback
-        self.setWindowTitle("Customer Form")
+        self.setWindowTitle("User Form")
         self.setMinimumSize(400, 350)
         self.setStyleSheet(getGlobalStylesheet())
         self.init_ui()
 
-        if self.customer_id:
-            self.load_customer()
+        if self.user_id:
+            self.load_user()
 
     def init_ui(self):
         layout = QVBoxLayout()
@@ -35,7 +35,7 @@ class CustomerForm(QWidget):
         layout.setSpacing(15)
 
         # Title
-        title = QLabel("Edit Customer" if self.customer_id else "Add New Customer")
+        title = QLabel("Edit User" if self.user_id else "Add New User")
         title.setStyleSheet("font-size: 18px; font-weight: bold;")
         layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -74,22 +74,22 @@ class CustomerForm(QWidget):
         self.save_btn = QPushButton("Save")
         self.save_btn.setProperty("class", "primary")
         self.save_btn.setMinimumHeight(36)
-        self.save_btn.clicked.connect(self.save_customer)
+        self.save_btn.clicked.connect(self.save_user)
         layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.setLayout(layout)
 
-    def load_customer(self):
-        """Load customer data for editing"""
-        customer = get_customer(self.customer_id)
-        if customer:
-            _, name, email, contact, address = customer
+    def load_user(self):
+        """Load user data for editing"""
+        user = getUser(self.user_id)
+        if user:
+            _, name, email, contact, address = user
             self.name_input.setText(name)
             self.email_input.setText(email)
             self.contact_input.setText(contact)
             self.address_input.setText(address)
 
-    def save_customer(self):
+    def save_user(self):
         name = self.name_input.text().strip()
         email = self.email_input.text().strip()
         contact = self.contact_input.text().strip()
@@ -102,20 +102,20 @@ class CustomerForm(QWidget):
             return
 
         try:
-            if self.customer_id:
-                update_customer(
-                    self.customer_id,
+            if self.user_id:
+                updateUser(
+                    self.user_id,
                     name=name,
                     email=email,
                     contact=contact,
                     address=address,
                 )
                 QMessageBox.information(
-                    self, "Success", "Customer updated successfully."
+                    self, "Success", "User updated successfully."
                 )
             else:
-                add_customer(name, email, contact, address)
-                QMessageBox.information(self, "Success", "Customer added successfully.")
+                addUser(name, email, contact, address)
+                QMessageBox.information(self, "Success", "User added successfully.")
 
             self.refresh_callback()
             self.close()

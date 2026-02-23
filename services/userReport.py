@@ -3,25 +3,25 @@ from config.db import DB_FILE
 from utils.pdfUtils import PDFExporter
 
 
-def getCustomerWithAccounts(customer_id):
+def getUserWithAccounts(user_id):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM customers WHERE id=?", (customer_id,))
-    customer = cursor.fetchone()
+    cursor.execute("SELECT * FROM users WHERE id=?", (user_id,))
+    user = cursor.fetchone()
 
-    if not customer:
+    if not user:
         conn.close()
         return None
 
     cursor.execute(
         """
         SELECT type, amount, description, date
-        FROM customer_accounts
-        WHERE customer_id=?
+        FROM user_accounts
+        WHERE user_id=?
         ORDER BY date ASC
         """,
-        (customer_id,),
+        (user_id,),
     )
 
     accounts = cursor.fetchall()
@@ -31,27 +31,27 @@ def getCustomerWithAccounts(customer_id):
     total_dr = sum(a[1] for a in accounts if a[0] == "DR")
     balance = total_cr - total_dr
 
-    return customer, accounts, total_cr, total_dr, balance
+    return user, accounts, total_cr, total_dr, balance
 
 
-def exportCustomerPdf(parent, customer_id):
-    data = getCustomerWithAccounts(customer_id)
+def exportUserPdf(parent, user_id):
+    data = getUserWithAccounts(user_id)
     if not data:
         return
 
-    customer, accounts, total_cr, total_dr, balance = data
+    user, accounts, total_cr, total_dr, balance = data
 
-    pdf = PDFExporter(parent, filename=f"{customer[1]}_report.pdf")
+    pdf = PDFExporter(parent, filename=f"{user[1]}_report.pdf")
 
     # Title
-    pdf.draw_title("Customer Ledger Report")
+    pdf.draw_title("user Ledger Report")
 
-    # Customer Info
-    pdf.draw_customer_info(
+    # user Info
+    pdf.draw_user_info(
         {
-            "Name": customer[1],
-            "Email": customer[2],
-            "Contact": customer[3],
+            "Name": user[1],
+            "Email": user[2],
+            "Contact": user[3],
         }
     )
 

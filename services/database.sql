@@ -2,46 +2,46 @@
 -- Users & Session
 -- ===============================
 CREATE TABLE
-    IF NOT EXISTS users (
+    IF NOT EXISTS session (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
+        user_id INTEGER NOT NULL,
+        description TEXT,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     );
 
 CREATE TABLE
-    IF NOT EXISTS session (username TEXT UNIQUE);
-
--- ===============================
--- Customers & Accounts
--- ===============================
-CREATE TABLE
-    IF NOT EXISTS customers (
+    IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        name TEXT,
+        username TEXT UNIQUE NOT NULL,
         email TEXT UNIQUE NOT NULL,
         contact TEXT,
         address TEXT,
-        type TEXT NOT NULL CHECK (
-            type IN ('customer', 'supplier', 'seller', 'wholeSeller')
+        password TEXT,
+        type TEXT NOT NULL DEFAULT 'user' CHECK (
+            type IN ('user', 'employee', 'customer', 'supplier')
         ),
         date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
+CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
+
+-- ===============================
+-- User Accounts
+-- ===============================
 CREATE TABLE
-    IF NOT EXISTS customer_accounts (
+    IF NOT EXISTS user_accounts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customer_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
         type TEXT CHECK (type IN ('CR', 'DR')) NOT NULL,
         amount REAL NOT NULL CHECK (amount >= 0),
         description TEXT,
         date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     );
 
-CREATE INDEX IF NOT EXISTS idx_customers_email ON customers (email);
-
-CREATE INDEX IF NOT EXISTS idx_customer_accounts_customer_id ON customer_accounts (customer_id);
+CREATE INDEX IF NOT EXISTS idx_user_accounts_user_id ON user_accounts (user_id);
 
 -- ===============================
 -- Categories & Products
@@ -93,7 +93,7 @@ CREATE TABLE
         supplier_id INTEGER NOT NULL,
         total_amount REAL NOT NULL CHECK (total_amount >= 0),
         date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (supplier_id) REFERENCES customers (id) ON DELETE CASCADE
+        FOREIGN KEY (supplier_id) REFERENCES users (id) ON DELETE CASCADE
     );
 
 CREATE TABLE
@@ -117,10 +117,10 @@ CREATE INDEX IF NOT EXISTS idx_purchase_order_products_product_id ON purchase_or
 CREATE TABLE
     IF NOT EXISTS sale_orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customer_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
         total_amount REAL NOT NULL CHECK (total_amount >= 0),
         date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     );
 
 CREATE TABLE

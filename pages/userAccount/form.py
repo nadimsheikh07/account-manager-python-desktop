@@ -9,21 +9,21 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from PySide6.QtCore import Qt
-from services.customerAccount import addTransaction, getCustomerBalance
-from services.customer import getAllCustomers
+from services.userAccount import addTransaction, getUserBalance
+from services.user import getAllUsers
 from config.theme import getGlobalStylesheet
 
 
-class CustomerAccountForm(QWidget):
-    def __init__(self, refresh_callback, customer_id=None):
+class UserAccountForm(QWidget):
+    def __init__(self, refresh_callback, user_id=None):
         """
-        customer_id=None -> Optional, select customer from dropdown
+        user_id=None -> Optional, select user from dropdown
         refresh_callback -> function to refresh the account list after save
         """
         super().__init__()
-        self.customer_id = customer_id
+        self.user_id = user_id
         self.refresh_callback = refresh_callback
-        self.setWindowTitle("Customer Account Form")
+        self.setWindowTitle("User Account Form")
         self.setMinimumSize(400, 320)
         self.setStyleSheet(getGlobalStylesheet())
         self.init_ui()
@@ -43,17 +43,17 @@ class CustomerAccountForm(QWidget):
         grid.setVerticalSpacing(12)
         grid.setHorizontalSpacing(10)
 
-        # Customer dropdown
-        grid.addWidget(QLabel("Customer:"), 0, 0)
-        self.customer_dropdown = QComboBox()
-        self.load_customers()
-        grid.addWidget(self.customer_dropdown, 0, 1)
+        # User dropdown
+        grid.addWidget(QLabel("User:"), 0, 0)
+        self.user_dropdown = QComboBox()
+        self.load_users()
+        grid.addWidget(self.user_dropdown, 0, 1)
 
-        if self.customer_id:
-            # Preselect the customer if provided
-            index = self.customer_dropdown.findData(self.customer_id)
+        if self.user_id:
+            # Preselect the User if provided
+            index = self.user_dropdown.findData(self.user_id)
             if index != -1:
-                self.customer_dropdown.setCurrentIndex(index)
+                self.user_dropdown.setCurrentIndex(index)
 
         # Type: CR or DR
         grid.addWidget(QLabel("Type:"), 1, 0)
@@ -79,8 +79,8 @@ class CustomerAccountForm(QWidget):
         self.balance_label = QLabel("0.00")
         grid.addWidget(self.balance_label, 4, 1)
 
-        # Update balance when selecting customer
-        self.customer_dropdown.currentIndexChanged.connect(self.update_balance)
+        # Update balance when selecting User
+        self.user_dropdown.currentIndexChanged.connect(self.update_balance)
 
         layout.addLayout(grid)
 
@@ -96,32 +96,38 @@ class CustomerAccountForm(QWidget):
         # Initial balance
         self.update_balance()
 
-    def load_customers(self):
-        """Load all customers into the dropdown"""
-        self.customer_dropdown.clear()
-        customers = getAllCustomers()
-        for c in customers:
-            customer_id, name, email, _, _, _ = c
+    def load_users(self):
+        """Load all Users into the dropdown"""
+        self.user_dropdown.clear()
+        users = getAllUsers()
+        for user in users:
+            user_id = user["id"]
+            name = user["name"]
+            email = user["email"]
+            contact = user["contact"]
+            address = user["address"]
+            date = user["date"]
+            type = user["type"]
             display_text = f"{name} ({email})"
-            self.customer_dropdown.addItem(display_text, customer_id)
+            self.user_dropdown.addItem(display_text, user_id)
 
     def update_balance(self):
-        """Update current balance display for selected customer"""
-        customer_id = self.customer_dropdown.currentData()
-        if customer_id:
-            balance = getCustomerBalance(customer_id)
+        """Update current balance display for selected User"""
+        user_id = self.user_dropdown.currentData()
+        if user_id:
+            balance = getUserBalance(user_id)
             self.balance_label.setText(f"{balance:.2f}")
         else:
             self.balance_label.setText("0.00")
 
     def save_transaction(self):
-        customer_id = self.customer_dropdown.currentData()
+        user_id = self.user_dropdown.currentData()
         amount_text = self.amount_input.text().strip()
         type_ = self.type_combo.currentText()
         description = self.description_input.text().strip()
 
-        if not customer_id:
-            QMessageBox.warning(self, "Validation Error", "Customer is required.")
+        if not user_id:
+            QMessageBox.warning(self, "Validation Error", "User is required.")
             return
 
         if not amount_text:
@@ -135,7 +141,7 @@ class CustomerAccountForm(QWidget):
             return
 
         try:
-            addTransaction(customer_id, amount, type_, description)
+            addTransaction(user_id, amount, type_, description)
             QMessageBox.information(self, "Success", "Transaction added successfully.")
             self.refresh_callback()
             self.close()

@@ -9,7 +9,7 @@ from PySide6.QtCore import Qt, QSize, Signal
 
 class Sidebar(QFrame):
     dashboard_clicked = Signal()
-    customers_clicked = Signal()
+    users_clicked = Signal()
     accounts_clicked = Signal()
     logout_clicked = Signal()
     toggle_clicked = Signal()
@@ -35,9 +35,9 @@ class Sidebar(QFrame):
                 self.dashboard_clicked.emit,
             ),
             (
-                "Customers",
+                "Users",
                 QStyle.StandardPixmap.SP_FileIcon,
-                self.customers_clicked.emit,
+                self.users_clicked.emit,
             ),
             (
                 "Accounts",
@@ -73,11 +73,11 @@ class Sidebar(QFrame):
     def toggle_sidebar(self):
         if self.sidebar_expanded:
             self.setFixedWidth(60)
-            for label in ["Dashboard", "Customers", "Accounts", "Logout"]:
+            for label in ["Dashboard", "Users", "Accounts", "Logout"]:
                 self.buttons[label].setText("")
         else:
             self.setFixedWidth(200)
-            for label in ["Dashboard", "Customers", "Accounts", "Logout"]:
+            for label in ["Dashboard", "Users", "Accounts", "Logout"]:
                 self.buttons[label].setText(label)
 
         self.sidebar_expanded = not self.sidebar_expanded
@@ -86,7 +86,7 @@ class Sidebar(QFrame):
     # Active Highlight
     # ========================================
     def set_active(self, active_label):
-        for label in ["Dashboard", "Customers", "Accounts"]:
+        for label in ["Dashboard", "Users", "Accounts"]:
             btn = self.buttons[label]
             btn.setProperty("active", label == active_label)
             btn.style().unpolish(btn)

@@ -7,6 +7,7 @@ import os
 def init_db():
     """Initialize database from SQL file and create default admin user"""
 
+    default_name = "Nadim Sheikh"
     default_username = "admin"
     default_email = "nadim.sheikh.07@gmail.com"
     default_password = "admin"
@@ -27,8 +28,8 @@ def init_db():
             hashed = bcrypt.hashpw(default_password.encode(), bcrypt.gensalt()).decode()
 
             cursor.execute(
-                "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-                (default_username, default_email, hashed),
+                "INSERT INTO users (name, username, email, password) VALUES (?, ?, ?, ?)",
+                (default_name, default_username, default_email, hashed),
             )
 
         conn.commit()

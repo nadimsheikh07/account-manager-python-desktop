@@ -2,13 +2,13 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter
-from services.customer import get_monthly_customer_entries
+from services.user import getMonthlyUserEntries
 from datetime import datetime
 
 
-class MonthlyCustomersChart(QWidget):
+class MonthlyUsersChart(QWidget):
     """
-    Component showing monthly new customer registrations.
+    Component showing monthly new user registrations.
     """
 
     def __init__(self):
@@ -20,7 +20,7 @@ class MonthlyCustomersChart(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setSpacing(10)
 
-        title = QLabel("Monthly Customer Entries")
+        title = QLabel("Monthly User Entries")
         title.setStyleSheet("font-size: 18px; font-weight: bold;")
         layout.addWidget(title)
 
@@ -30,10 +30,10 @@ class MonthlyCustomersChart(QWidget):
         self.setLayout(layout)
 
     def create_chart(self) -> QChartView:
-        # Fetch monthly customer data
-        monthly_data = get_monthly_customer_entries()  # [(YYYY-MM, total), ...]
+        # Fetch monthly user data
+        monthly_data = getMonthlyUserEntries()  # [(YYYY-MM, total), ...]
 
-        bar_set = QBarSet("New Customers")
+        bar_set = QBarSet("New Users")
         categories = []
 
         for year_month, total in monthly_data:
@@ -47,7 +47,7 @@ class MonthlyCustomersChart(QWidget):
         chart = QChart()
         chart.addSeries(series)
         chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
-        chart.setTitle("Monthly Customer Entries")
+        chart.setTitle("Monthly User Entries")
 
         axis_x = QBarCategoryAxis()
         axis_x.append(categories)

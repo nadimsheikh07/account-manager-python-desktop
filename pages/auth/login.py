@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QFrame,
 )
 from PySide6.QtCore import Qt, Signal
-from services.auth import authenticateUser, createSession
+from services.auth import authenticateUser
 from config.theme import getGlobalStylesheet
 from utils.formUtils import setError
 
@@ -155,7 +155,6 @@ class LoginForm(QWidget):
             return
 
         if authenticateUser(username, password):
-            createSession(username)
             QMessageBox.information(self, "Login", "Login successful!")
             self.loginSuccessful.emit()  # emit signal
             self.close()

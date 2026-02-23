@@ -41,8 +41,8 @@ class PDFExporter:
         self.y += 80
         self.painter.setFont(QFont("Arial", 10))
 
-    def draw_customer_info(self, customer_info: dict):
-        for key, value in customer_info.items():
+    def draw_user_info(self, user_info: dict):
+        for key, value in user_info.items():
             self.painter.drawText(self.margin, self.y, f"{key}: {value or ''}")
             self.y += 50
         self.y += 10

@@ -12,18 +12,18 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from functools import partial
 from config.theme import getGlobalStylesheet
-from services.customer import getAllCustomers
-from services.customerAccount import (
-    getCustomerTransactions,
+from services.user import getAllUsers
+from services.userAccount import (
+    getUserTransactions,
     deleteTransaction,  # we’ll assume we add this to the service
     exportToExcel,
 )
-from pages.customerAccount.form import CustomerAccountForm
+from pages.userAccount.form import UserAccountForm
 from datetime import datetime
 from components.heading import createTitle
 
 
-class CustomerAccountList(QWidget):
+class UserAccountList(QWidget):
     def __init__(self):
         super().__init__()
         self.setMinimumSize(700, 500)
@@ -36,7 +36,7 @@ class CustomerAccountList(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
-        layout.addWidget(createTitle("Customer Accounts"))
+        layout.addWidget(createTitle("user Accounts"))
 
         # ===== Top Bar =====
         top_layout = QHBoxLayout()
@@ -44,7 +44,7 @@ class CustomerAccountList(QWidget):
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText(
-            "Search by customer name, email, or contact..."
+            "Search by user name, email, or contact..."
         )
         self.search_input.setMinimumHeight(36)
         self.search_input.textChanged.connect(self.load_data)
@@ -68,7 +68,7 @@ class CustomerAccountList(QWidget):
         self.table = QTableWidget()
         self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels(
-            ["ID", "Customer", "Email", "CR", "DR", "Balance", "Date", "Actions"]
+            ["ID", "user", "Email", "CR", "DR", "Balance", "Date", "Actions"]
         )
 
         self.table.setSortingEnabled(True)
@@ -91,23 +91,31 @@ class CustomerAccountList(QWidget):
     # =========================
     def load_data(self):
         self.table.setSortingEnabled(False)
-        all_customers = getAllCustomers()
+        all_users = getAllUsers()
         query = self.search_input.text().lower()
 
-        # Filter customers
-        filtered_customers = [
-            c
-            for c in all_customers
-            if query in str(c[1]).lower()
-            or query in str(c[2]).lower()
-            or query in str(c[3]).lower()
+        # Filter safely using dictionary access
+        filtered = [
+            user
+            for user in all_users
+            if query in str(user["name"] or "").lower()
+            or query in str(user["email"] or "").lower()
+            or query in str(user["contact"] or "").lower()
+            or query in str(user["address"] or "").lower()
+            or query in str(user["date"] or "").lower()
         ]
 
-        # Gather all transactions for filtered customers
+        # Gather all transactions for filtered users
         all_rows = []
-        for c in filtered_customers:
-            customer_id, name, email, _, _, _ = c
-            transactions = getCustomerTransactions(customer_id)
+        for user in filtered:
+            user_id = user["id"]
+            name = user["name"]
+            email = user["email"]
+            contact = user["contact"]
+            address = user["address"]
+            date = user["date"]
+            type = user["type"]
+            transactions = getUserTransactions(user_id)
 
             # Sort transactions by date (and optionally by ID)
             transactions.sort(
@@ -133,7 +141,7 @@ class CustomerAccountList(QWidget):
                         running_balance,  # <-- running balance
                         date,
                         description,
-                        customer_id,
+                        user_id,
                     )
                 )
 
@@ -149,7 +157,7 @@ class CustomerAccountList(QWidget):
                 balance,
                 date,
                 description,
-                customer_id,
+                user_id,
             ) = row
             row_data = [
                 trx_id,
@@ -169,9 +177,7 @@ class CustomerAccountList(QWidget):
             # ===== Actions =====
             edit_btn = QPushButton("Edit")
             edit_btn.setProperty("class", "primary")
-            edit_btn.clicked.connect(
-                partial(self.edit_transaction, trx_id, customer_id)
-            )
+            edit_btn.clicked.connect(partial(self.edit_transaction, trx_id, user_id))
 
             delete_btn = QPushButton("Delete")
             delete_btn.setProperty("class", "danger")
@@ -191,19 +197,19 @@ class CustomerAccountList(QWidget):
     # =========================
     # Actions
     # =========================
-    def open_add_form(self, customer_id=None):
+    def open_add_form(self, user_id=None):
         """Open form for adding CR/DR transaction"""
-        self.account_form = CustomerAccountForm(
+        self.account_form = UserAccountForm(
             refresh_callback=self.load_data,
-            customer_id=customer_id,
+            user_id=user_id,
         )
         self.account_form.show()
 
-    def edit_transaction(self, trx_id, customer_id):
+    def edit_transaction(self, trx_id, user_id):
         """Edit transaction - for now, re-use the add form"""
-        self.account_form = CustomerAccountForm(
+        self.account_form = UserAccountForm(
             refresh_callback=self.load_data,
-            customer_id=customer_id,
+            user_id=user_id,
         )
         self.account_form.show()
 
