@@ -95,6 +95,7 @@ class UserList(QWidget):
 
         self.table.setColumnHidden(0, True)
         layout.addWidget(self.table)
+        layout.setStretchFactor(self.table, 1)
 
     # =========================
     # Data Loading
