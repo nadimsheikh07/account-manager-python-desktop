@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QMessageBox,
     QHeaderView,
+    QTabWidget,
 )
 from PySide6.QtCore import Qt
 from functools import partial
@@ -17,10 +18,16 @@ from pages.user.form import UserForm
 from services.userAccount import getUserBalance
 from services.userReport import exportUserPdf
 from components.heading import createTitle
-from PySide6.QtWidgets import QTabWidget
 
 
 class UserList(QWidget):
+    TYPE_MAP = {
+        "users": "user",
+        "employees": "employee",
+        "customers": "customer",
+        "suppliers": "supplier",
+    }
+
     def __init__(self):
         super().__init__()
         self.setMinimumSize(600, 400)
@@ -33,14 +40,14 @@ class UserList(QWidget):
     # UI Setup
     # =========================
     def init_ui(self):
-        layout = QVBoxLayout()
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
+
         layout.addWidget(createTitle("Users"))
 
         # ===== Top Bar =====
         top_layout = QHBoxLayout()
-        top_layout.setSpacing(10)
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText(
@@ -51,28 +58,24 @@ class UserList(QWidget):
 
         self.add_btn = QPushButton("Add User")
         self.add_btn.setProperty("class", "primary")
-        self.add_btn.setMinimumHeight(36)
         self.add_btn.clicked.connect(self.open_add_form)
 
         self.export_btn = QPushButton("Export to Excel")
         self.export_btn.setProperty("class", "primary")
-        self.export_btn.setMinimumHeight(36)
         self.export_btn.clicked.connect(lambda: exportToExcel(self))
 
         top_layout.addWidget(self.search_input)
         top_layout.addWidget(self.add_btn)
         top_layout.addWidget(self.export_btn)
+
         layout.addLayout(top_layout)
 
         # ===== Tabs =====
         self.tabs = QTabWidget()
-        self.tabs.addTab(QWidget(), "Users")
-        self.tabs.addTab(QWidget(), "Employees")
-        self.tabs.addTab(QWidget(), "Customers")
-        self.tabs.addTab(QWidget(), "Suppliers")
+        for label in self.TYPE_MAP.keys():
+            self.tabs.addTab(QWidget(), label.capitalize())
 
         self.tabs.currentChanged.connect(self.load_data)
-
         layout.addWidget(self.tabs)
 
         # ===== Table =====
@@ -81,6 +84,7 @@ class UserList(QWidget):
         self.table.setHorizontalHeaderLabels(
             ["ID", "Name", "Email", "Contact", "Address", "Date", "Balance", "Actions"]
         )
+
         self.table.setSortingEnabled(True)
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -89,103 +93,92 @@ class UserList(QWidget):
             QHeaderView.ResizeMode.Stretch
         )
 
-        # Hide ID column
         self.table.setColumnHidden(0, True)
-
         layout.addWidget(self.table)
-        self.setLayout(layout)
 
     # =========================
-
-    # Load Data
+    # Data Loading
     # =========================
     def load_data(self):
         self.table.setSortingEnabled(False)
 
-        # Get selected tab text
-        current_tab = self.tabs.tabText(self.tabs.currentIndex()).lower()
+        selected_type = self._get_selected_type()
+        users = [dict(row) for row in getAllUsers(selected_type)]
+        filtered_users = self._filter_users(users)
 
-        # Map tab labels to database types
-        type_map = {
-            "users": "user",
-            "employees": "employee",
-            "customers": "customer",
-            "suppliers": "supplier",
-        }
-        selected_type = type_map.get(current_tab, "user")
+        self._populate_table(filtered_users)
 
-        # Fetch data
-        all_users = getAllUsers(selected_type)
-        query = self.search_input.text().lower()
+        self.table.setSortingEnabled(True)
 
-        # Filter safely
-        filtered = [
-            user
-            for user in all_users
-            if query in str(user["name"] or "").lower()
-            or query in str(user["email"] or "").lower()
-            or query in str(user["contact"] or "").lower()
-            or query in str(user["address"] or "").lower()
-            or query in str(user["date"] or "").lower()
-        ]
+    def _get_selected_type(self):
+        tab_text = self.tabs.tabText(self.tabs.currentIndex()).lower()
+        return self.TYPE_MAP.get(tab_text, "user")
 
-        self.table.setRowCount(len(filtered))
+    def _filter_users(self, users):
+        query = self.search_input.text().strip().lower()
+        if not query:
+            return users
 
-        for row_idx, user in enumerate(filtered):
-            user_id = user["id"]
-            name = user["name"]
-            email = user["email"]
-            contact = user["contact"]
-            address = user["address"]
-            date = user["date"]
+        def matches(user):
+            fields = ["name", "email", "contact", "address", "date"]
+            return any(query in str(user.get(field, "")).lower() for field in fields)
 
+        return [user for user in users if matches(user)]
+
+    def _populate_table(self, users):
+        self.table.setRowCount(len(users))
+
+        for row, user in enumerate(users):
+            user_id = user.get("id")
+
+            # ⚠ If possible, optimize this by fetching balances in bulk
             balance = getUserBalance(user_id)
 
-            row_values = [
+            row_data = [
                 user_id,
-                name,
-                email,
-                contact,
-                address,
-                date,
+                user.get("name", ""),
+                user.get("email", ""),
+                user.get("contact", ""),
+                user.get("address", ""),
+                user.get("date", ""),
                 f"{balance:.2f}",
             ]
 
-            for col_idx, value in enumerate(row_values):
-                item = QTableWidgetItem(str(value if value is not None else ""))
+            for col, value in enumerate(row_data):
+                item = QTableWidgetItem(str(value))
                 item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
-                self.table.setItem(row_idx, col_idx, item)
+                self.table.setItem(row, col, item)
 
-            # Action buttons
-            edit_btn = QPushButton("Edit")
-            edit_btn.setProperty("class", "primary")
-            edit_btn.clicked.connect(partial(self.edit_user, user_id))
+            self.table.setCellWidget(row, 7, self._create_action_buttons(user_id))
 
-            delete_btn = QPushButton("Delete")
-            delete_btn.setProperty("class", "danger")
-            delete_btn.clicked.connect(partial(self.delete_user, user_id))
+    def _create_action_buttons(self, user_id):
+        edit_btn = QPushButton("Edit")
+        edit_btn.setProperty("class", "primary")
+        edit_btn.clicked.connect(partial(self.edit_user, user_id))
 
-            pdf_btn = QPushButton("PDF")
-            pdf_btn.setProperty("class", "primary")
-            pdf_btn.clicked.connect(partial(exportUserPdf, self, user_id))
+        delete_btn = QPushButton("Delete")
+        delete_btn.setProperty("class", "danger")
+        delete_btn.clicked.connect(partial(self.delete_user, user_id))
 
-            action_layout = QHBoxLayout()
-            action_layout.addWidget(edit_btn)
-            action_layout.addWidget(delete_btn)
-            action_layout.addWidget(pdf_btn)
-            action_layout.setContentsMargins(0, 0, 0, 0)
+        pdf_btn = QPushButton("PDF")
+        pdf_btn.setProperty("class", "primary")
+        pdf_btn.clicked.connect(partial(exportUserPdf, self, user_id))
 
-            action_widget = QWidget()
-            action_widget.setLayout(action_layout)
-            self.table.setCellWidget(row_idx, 7, action_widget)
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(edit_btn)
+        layout.addWidget(delete_btn)
+        layout.addWidget(pdf_btn)
 
-        self.table.setSortingEnabled(True)
+        container = QWidget()
+        container.setLayout(layout)
+        return container
 
     # =========================
     # Actions
     # =========================
     def open_add_form(self):
-        self.user_form = UserForm(refresh_callback=self.load_data, user_id=None)
+        self.user_form = UserForm(refresh_callback=self.load_data)
         self.user_form.show()
 
     def edit_user(self, user_id):
@@ -199,6 +192,7 @@ class UserList(QWidget):
             "Are you sure you want to delete this user?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
+
         if confirm == QMessageBox.StandardButton.Yes:
             delete_user(user_id)
             QMessageBox.information(self, "Deleted", "User deleted successfully.")
