@@ -50,13 +50,11 @@ def addUser(name, email, contact=None, address=None, user_type="user"):
 
 
 def getUser(user_id):
-    """Fetch user by ID"""
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE id=?", (user_id,))
-    row = cursor.fetchone()
-    conn.close()
-    return row  # (id, name, email, contact, address, date) or None
+    with sqlite3.connect(DB_FILE) as conn:
+        conn.row_factory = sqlite3.Row  # ✅ THIS IS IMPORTANT
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+        return cursor.fetchone()
 
 
 def getAllUsers(type="user"):
@@ -77,51 +75,64 @@ def getAllUsers(type="user"):
     return rows
 
 
+import sqlite3
+
+
 def updateUser(
-    user_id, name=None, email=None, contact=None, address=None, user_type="user"
+    user_id,
+    name=None,
+    email=None,
+    contact=None,
+    address=None,
+    user_type=None,  # ✅ default should be None
 ):
     """Update user details. Only provided fields are updated"""
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
+
+    if not user_id:
+        raise ValueError("User ID is required")
 
     fields = []
     values = []
 
     if name is not None:
         fields.append("name=?")
-        values.append(name)
+        values.append(name.strip())
 
     if email is not None:
         fields.append("email=?")
-        values.append(email)
+        values.append(email.strip().lower())
 
     if contact is not None:
         fields.append("contact=?")
-        values.append(contact)
+        values.append(contact.strip() if contact else None)
 
     if address is not None:
         fields.append("address=?")
-        values.append(address)
+        values.append(address.strip() if address else None)
 
-    if type is not None:
+    if user_type is not None:  # ✅ correct variable
+        valid_types = {"user", "employee", "customer", "supplier"}
+        if user_type not in valid_types:
+            raise ValueError("Invalid user type")
+
         fields.append("type=?")
         values.append(user_type)
 
     if not fields:
-        conn.close()
         return False  # nothing to update
 
     values.append(user_id)
     query = f"UPDATE users SET {', '.join(fields)} WHERE id=?"
 
     try:
-        cursor.execute(query, tuple(values))
-        conn.commit()
-        return True
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, tuple(values))
+            conn.commit()
+            return cursor.rowcount > 0
+
     except sqlite3.IntegrityError:
         raise ValueError("Email already exists")
-    finally:
-        conn.close()
 
 
 def delete_user(user_id):

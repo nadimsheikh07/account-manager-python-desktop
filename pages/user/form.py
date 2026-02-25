@@ -84,12 +84,14 @@ class UserForm(QWidget):
     def load_user(self):
         """Load user data for editing"""
         user = getUser(self.user_id)
-        if user:
-            _, name, email, contact, address = user
-            self.name_input.setText(name)
-            self.email_input.setText(email)
-            self.contact_input.setText(contact)
-            self.address_input.setText(address)
+
+        if not user:
+            return
+
+        self.name_input.setText(user["name"] or "")
+        self.email_input.setText(user["email"] or "")
+        self.contact_input.setText(user["contact"] or "")
+        self.address_input.setText(user["address"] or "")
 
     def save_user(self):
         name = self.name_input.text().strip()
@@ -112,11 +114,11 @@ class UserForm(QWidget):
                     email=email,
                     contact=contact,
                     address=address,
-                    type=user_type,
+                    user_type=user_type,
                 )
                 QMessageBox.information(self, "Success", "User updated successfully.")
             else:
-                addUser(name, email, contact, address,user_type)
+                addUser(name, email, contact, address, user_type)
                 QMessageBox.information(self, "Success", "User added successfully.")
 
             self.refresh_callback()
