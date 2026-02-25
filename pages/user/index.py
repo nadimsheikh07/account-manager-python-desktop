@@ -179,11 +179,15 @@ class UserList(QWidget):
     # Actions
     # =========================
     def open_add_form(self):
-        self.user_form = UserForm(refresh_callback=self.load_data)
+        user_type = self._get_selected_type()
+        self.user_form = UserForm(refresh_callback=self.load_data, user_type=user_type)
         self.user_form.show()
 
     def edit_user(self, user_id):
-        self.user_form = UserForm(refresh_callback=self.load_data, user_id=user_id)
+        user_type = self._get_selected_type()
+        self.user_form = UserForm(
+            refresh_callback=self.load_data, user_type=user_type, user_id=user_id
+        )
         self.user_form.show()
 
     def delete_user(self, user_id):

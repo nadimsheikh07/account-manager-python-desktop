@@ -8,21 +8,45 @@ from PySide6.QtWidgets import (
 from datetime import datetime
 
 
-def addUser(name, email, contact=None, address=None):
+import sqlite3
+
+
+def addUser(name, email, contact=None, address=None, user_type="user"):
     """Add a new user"""
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
+
+    # ===== Basic Validation =====
+    if not name or not name.strip():
+        raise ValueError("Name is required")
+
+    if not email or not email.strip():
+        raise ValueError("Email is required")
+
+    valid_types = {"user", "employee", "customer", "supplier"}
+    if user_type not in valid_types:
+        raise ValueError("Invalid user type")
+
     try:
-        cursor.execute(
-            "INSERT INTO users (name, email, contact, address) VALUES (?, ?, ?, ?)",
-            (name, email, contact, address),
-        )
-        conn.commit()
-        return cursor.lastrowid
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO users (name, username, email, contact, address, type)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    name.strip(),
+                    name.strip(),
+                    email.strip().lower(),
+                    contact.strip() if contact else None,
+                    address.strip() if address else None,
+                    user_type,
+                ),
+            )
+            conn.commit()
+            return cursor.lastrowid
+
     except sqlite3.IntegrityError:
         raise ValueError("Email already exists")
-    finally:
-        conn.close()
 
 
 def getUser(user_id):
@@ -53,7 +77,9 @@ def getAllUsers(type="user"):
     return rows
 
 
-def updateUser(user_id, name=None, email=None, contact=None, address=None):
+def updateUser(
+    user_id, name=None, email=None, contact=None, address=None, user_type="user"
+):
     """Update user details. Only provided fields are updated"""
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -76,6 +102,10 @@ def updateUser(user_id, name=None, email=None, contact=None, address=None):
     if address is not None:
         fields.append("address=?")
         values.append(address)
+
+    if type is not None:
+        fields.append("type=?")
+        values.append(user_type)
 
     if not fields:
         conn.close()

@@ -13,13 +13,15 @@ from config.theme import getGlobalStylesheet
 
 
 class UserForm(QWidget):
-    def __init__(self, refresh_callback, user_id=None):
+    def __init__(self, refresh_callback, user_type="user", user_id=None):
         """
         user_id=None -> Create new
         refresh_callback -> function to refresh the list after save
         """
         super().__init__()
         self.user_id = user_id
+        self.user_type = user_type
+
         self.refresh_callback = refresh_callback
         self.setWindowTitle("User Form")
         self.setMinimumSize(400, 350)
@@ -94,6 +96,7 @@ class UserForm(QWidget):
         email = self.email_input.text().strip()
         contact = self.contact_input.text().strip()
         address = self.address_input.text().strip()
+        user_type = self.user_type
 
         if not (name and email):
             QMessageBox.warning(
@@ -109,12 +112,11 @@ class UserForm(QWidget):
                     email=email,
                     contact=contact,
                     address=address,
+                    type=user_type,
                 )
-                QMessageBox.information(
-                    self, "Success", "User updated successfully."
-                )
+                QMessageBox.information(self, "Success", "User updated successfully.")
             else:
-                addUser(name, email, contact, address)
+                addUser(name, email, contact, address,user_type)
                 QMessageBox.information(self, "Success", "User added successfully.")
 
             self.refresh_callback()
