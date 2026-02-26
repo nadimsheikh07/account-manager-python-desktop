@@ -7,13 +7,14 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QVBoxLayout,
     QMessageBox,
+    QSizePolicy
 )
 from PySide6.QtCore import Qt
 from config.theme import getGlobalStylesheet
 from src.services.user import getAllUsers
 from src.services.userAccount import addTransaction, getUserBalance
-from src.models import User  # ORM model
 from sqlalchemy.exc import SQLAlchemyError
+from utils.formUtils import setError  # reuse error styling helper
 
 
 class UserAccountForm(QWidget):
@@ -26,7 +27,7 @@ class UserAccountForm(QWidget):
         self.user_id = user_id
         self.refresh_callback = refresh_callback
         self.setWindowTitle("User Account Form")
-        self.setMinimumSize(400, 320)
+        self.setMinimumSize(400, 350)
         self.setStyleSheet(getGlobalStylesheet())
         self.init_ui()
 
@@ -42,7 +43,7 @@ class UserAccountForm(QWidget):
 
         # Grid for inputs
         grid = QGridLayout()
-        grid.setVerticalSpacing(12)
+        grid.setVerticalSpacing(8)
         grid.setHorizontalSpacing(10)
 
         # User dropdown
@@ -50,6 +51,10 @@ class UserAccountForm(QWidget):
         self.user_dropdown = QComboBox()
         self.load_users()
         grid.addWidget(self.user_dropdown, 0, 1)
+        self.user_error = QLabel()
+        self.user_error.setStyleSheet("color: #e74c3c; font-size: 11px;")
+        self.user_error.setVisible(False)
+        grid.addWidget(self.user_error, 1, 1)
 
         if self.user_id:
             index = self.user_dropdown.findData(self.user_id)
@@ -57,28 +62,32 @@ class UserAccountForm(QWidget):
                 self.user_dropdown.setCurrentIndex(index)
 
         # Type: CR or DR
-        grid.addWidget(QLabel("Type:"), 1, 0)
+        grid.addWidget(QLabel("Type:"), 2, 0)
         self.type_combo = QComboBox()
         self.type_combo.addItems(["CR", "DR"])
-        grid.addWidget(self.type_combo, 1, 1)
+        grid.addWidget(self.type_combo, 2, 1)
 
         # Amount
-        grid.addWidget(QLabel("Amount:"), 2, 0)
+        grid.addWidget(QLabel("Amount:"), 3, 0)
         self.amount_input = QLineEdit()
         self.amount_input.setMinimumHeight(30)
         self.amount_input.setPlaceholderText("Enter numeric amount")
-        grid.addWidget(self.amount_input, 2, 1)
+        grid.addWidget(self.amount_input, 3, 1)
+        self.amount_error = QLabel()
+        self.amount_error.setStyleSheet("color: #e74c3c; font-size: 11px;")
+        self.amount_error.setVisible(False)
+        grid.addWidget(self.amount_error, 4, 1)
 
         # Description (optional)
-        grid.addWidget(QLabel("Description:"), 3, 0)
+        grid.addWidget(QLabel("Description:"), 5, 0)
         self.description_input = QLineEdit()
         self.description_input.setMinimumHeight(30)
-        grid.addWidget(self.description_input, 3, 1)
+        grid.addWidget(self.description_input, 5, 1)
 
         # Current Balance (read-only)
-        grid.addWidget(QLabel("Current Balance:"), 4, 0)
+        grid.addWidget(QLabel("Current Balance:"), 6, 0)
         self.balance_label = QLabel("0.00")
-        grid.addWidget(self.balance_label, 4, 1)
+        grid.addWidget(self.balance_label, 6, 1)
 
         # Update balance when selecting User
         self.user_dropdown.currentIndexChanged.connect(self.update_balance)
@@ -90,11 +99,30 @@ class UserAccountForm(QWidget):
         self.save_btn.setProperty("class", "primary")
         self.save_btn.setMinimumHeight(36)
         self.save_btn.clicked.connect(self.save_transaction)
+        self.save_btn.setEnabled(False)
+        # Make button full width
+        self.save_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Connect signals for validation
+        self.user_dropdown.currentIndexChanged.connect(self.validate_form)
+        self.amount_input.textChanged.connect(lambda: self.clear_error(self.amount_input, self.amount_error))
 
         self.setLayout(layout)
         self.update_balance()
+        self.validate_form()
 
+    # ==============================
+    # Helpers
+    # ==============================
+    def clear_error(self, input_field, error_label):
+        setError(False, input_field)
+        error_label.setVisible(False)
+
+    # ==============================
+    # Load users
+    # ==============================
     def load_users(self):
         """Load all Users into the dropdown (ORM)"""
         self.user_dropdown.clear()
@@ -106,6 +134,9 @@ class UserAccountForm(QWidget):
         except SQLAlchemyError as e:
             QMessageBox.warning(self, "Error", f"Failed to load users: {str(e)}")
 
+    # ==============================
+    # Update balance
+    # ==============================
     def update_balance(self):
         """Update current balance display for selected User"""
         user_id = self.user_dropdown.currentData()
@@ -118,29 +149,61 @@ class UserAccountForm(QWidget):
                 print("Balance fetch error:", e)
         else:
             self.balance_label.setText("0.00")
+        self.validate_form()
 
-    def save_transaction(self):
+    # ==============================
+    # Validation
+    # ==============================
+    def validate_form(self):
+        """Enable save button only if inputs are valid"""
+        valid = True
         user_id = self.user_dropdown.currentData()
         amount_text = self.amount_input.text().strip()
+
+        # User validation
+        if not user_id:
+            self.user_error.setText("User is required")
+            self.user_error.setVisible(True)
+            valid = False
+        else:
+            self.user_error.setVisible(False)
+
+        # Amount validation
+        if not amount_text:
+            self.amount_error.setText("Amount is required")
+            self.amount_error.setVisible(True)
+            setError(True, self.amount_input)
+            valid = False
+        else:
+            try:
+                amount = float(amount_text)
+                if amount <= 0:
+                    raise ValueError
+                self.amount_error.setVisible(False)
+                setError(False, self.amount_input)
+            except ValueError:
+                self.amount_error.setText("Enter a valid positive number")
+                self.amount_error.setVisible(True)
+                setError(True, self.amount_input)
+                valid = False
+
+        self.save_btn.setEnabled(valid)
+        return valid
+
+    # ==============================
+    # Save transaction
+    # ==============================
+    def save_transaction(self):
+        if not self.validate_form():
+            QMessageBox.warning(self, "Validation Error", "Please fix the errors before saving.")
+            return
+
+        user_id = self.user_dropdown.currentData()
+        amount = float(self.amount_input.text().strip())
         type_ = self.type_combo.currentText()
         description = self.description_input.text().strip()
 
-        if not user_id:
-            QMessageBox.warning(self, "Validation Error", "User is required.")
-            return
-
-        if not amount_text:
-            QMessageBox.warning(self, "Validation Error", "Amount is required.")
-            return
-
         try:
-            amount = float(amount_text)
-        except ValueError:
-            QMessageBox.warning(self, "Validation Error", "Amount must be a number.")
-            return
-
-        try:
-            # ORM-based transaction add
             addTransaction(user_id, amount, type_, description)
             QMessageBox.information(self, "Success", "Transaction added successfully.")
             self.refresh_callback()
