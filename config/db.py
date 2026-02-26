@@ -8,23 +8,10 @@ DATABASE_PATH = os.path.join(os.environ["USERPROFILE"], "accountManager.db")
 DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
 
 # Create engine
-engine = create_engine(
-    DATABASE_URL,
-    echo=False,
-    future=True
-)
+engine = create_engine(DATABASE_URL, echo=False, future=True)
 
 # Create session factory
-SessionLocal = sessionmaker(
-    bind=engine,
-    autoflush=False,
-    autocommit=False
-)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 # Base class for ORM models
 Base = declarative_base()
-
-
-# Optional: function to create tables
-def init_db():
-    Base.metadata.create_all(bind=engine)
