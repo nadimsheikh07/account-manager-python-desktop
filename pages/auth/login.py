@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QMessageBox,
     QFrame,
+    QApplication
 )
 from PySide6.QtCore import Qt, Signal
 from services.auth import authenticateUser
@@ -154,7 +155,19 @@ class LoginForm(QWidget):
             QMessageBox.warning(self, "Validation Error", "All fields are required.")
             return
 
-        if authenticateUser(username, password):
+        # Loading state
+        self.login_button.setEnabled(False)
+        self.login_button.setText("Logging in...")
+        QApplication.processEvents()
+
+        # Authenticate
+        success = authenticateUser(username, password)
+
+        # Restore button
+        self.login_button.setText("Login")
+        self.validate_form()
+
+        if success:
             QMessageBox.information(self, "Login", "Login successful!")
             self.loginSuccessful.emit()  # emit signal
             self.close()
