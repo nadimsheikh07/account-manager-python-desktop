@@ -2,7 +2,7 @@ import sys
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer, QObject
 
-from src.pages.auth.login import LoginForm
+from src.views.auth.login import LoginForm
 from main import MainApp
 from src.services.auth import getCurrentSession
 from splash import showSplash

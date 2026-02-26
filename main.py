@@ -5,10 +5,10 @@ from PySide6.QtWidgets import (
     QFrame,
 )
 from src.components.sidebar import Sidebar
-from src.pages.auth.login import LoginForm
-from src.pages.auth.dashboard import Dashboard
-from src.pages.user.index import UserList
-from src.pages.userAccount.index import UserAccountList
+from src.views.auth.login import LoginForm
+from src.views.auth.dashboard import Dashboard
+from src.views.user.index import UserList
+from src.views.userAccount.index import UserAccountList
 from src.services.auth import logout
 from config.theme import getGlobalStylesheet
 from config.app import APP_NAME

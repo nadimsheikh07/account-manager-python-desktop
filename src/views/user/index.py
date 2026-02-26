@@ -17,7 +17,7 @@ from src.services.user import getAllUsers, delete_user, exportToExcel
 from src.services.userAccount import getUserBalance
 from src.services.userLedger import exportUserPdf
 from src.components.heading import createTitle
-from src.pages.user.form import UserForm
+from src.views.user.form import UserForm
 
 class UserList(QWidget):
     TYPE_MAP = {

@@ -19,7 +19,7 @@ from src.services.userAccount import (
     deleteTransaction,
     exportToExcel,
 )
-from src.pages.userAccount.form import UserAccountForm
+from src.views.userAccount.form import UserAccountForm
 from src.components.heading import createTitle
 
 

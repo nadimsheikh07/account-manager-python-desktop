@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Qt
-from src.pages.dashboard.accountsChart import UserAccountsChart
-from src.pages.dashboard.monthlyUsersChart import MonthlyUsersChart
-from src.pages.dashboard.userCard import UserCard
+from src.views.dashboard.accountsChart import UserAccountsChart
+from src.views.dashboard.monthlyUsersChart import MonthlyUsersChart
+from src.views.dashboard.userCard import UserCard
 from src.components.heading import createTitle
 
 
