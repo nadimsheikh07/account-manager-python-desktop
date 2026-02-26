@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QVBoxLayout,
     QMessageBox,
-    QSizePolicy
+    QSizePolicy,
 )
 from PySide6.QtCore import Qt
 from config.theme import getGlobalStylesheet
@@ -46,15 +46,20 @@ class UserAccountForm(QWidget):
         grid.setVerticalSpacing(8)
         grid.setHorizontalSpacing(10)
 
+        # User Type dropdown
+        grid.addWidget(QLabel("User Type:"), 0, 0)
+        self.user_type_combo = QComboBox()
+        self.user_type_combo.addItems(["user", "employee", "customer", "supplier"])
+        grid.addWidget(self.user_type_combo, 0, 1)
+
         # User dropdown
-        grid.addWidget(QLabel("User:"), 0, 0)
+        grid.addWidget(QLabel("User:"), 1, 0)  # <-- row 1
         self.user_dropdown = QComboBox()
-        self.load_users()
-        grid.addWidget(self.user_dropdown, 0, 1)
+        grid.addWidget(self.user_dropdown, 1, 1)
         self.user_error = QLabel()
         self.user_error.setStyleSheet("color: #e74c3c; font-size: 11px;")
         self.user_error.setVisible(False)
-        grid.addWidget(self.user_error, 1, 1)
+        grid.addWidget(self.user_error, 2, 1)
 
         if self.user_id:
             index = self.user_dropdown.findData(self.user_id)
@@ -101,14 +106,21 @@ class UserAccountForm(QWidget):
         self.save_btn.clicked.connect(self.save_transaction)
         self.save_btn.setEnabled(False)
         # Make button full width
-        self.save_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.save_btn.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
 
         layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # Connect signals for validation
-        self.user_dropdown.currentIndexChanged.connect(self.validate_form)
-        self.amount_input.textChanged.connect(lambda: self.clear_error(self.amount_input, self.amount_error))
+        # Connect signals
+        self.user_type_combo.currentTextChanged.connect(self.load_users)
+        self.user_dropdown.currentIndexChanged.connect(self.update_balance)
+        self.amount_input.textChanged.connect(
+            lambda: self.clear_error(self.amount_input, self.amount_error)
+        )
 
+        # Now safe to load users and update balance
+        self.load_users()
         self.setLayout(layout)
         self.update_balance()
         self.validate_form()
@@ -124,15 +136,19 @@ class UserAccountForm(QWidget):
     # Load users
     # ==============================
     def load_users(self):
-        """Load all Users into the dropdown (ORM)"""
+        """Load all Users into the dropdown based on selected type"""
         self.user_dropdown.clear()
+        user_type = self.user_type_combo.currentText()  # get selected type
         try:
-            users = getAllUsers()  # ORM service returns list of User objects
+            users = getAllUsers(
+                type=user_type
+            )  # ORM service returns list of User objects
             for u in users:
                 display_text = f"{u.name} ({u.email})"
                 self.user_dropdown.addItem(display_text, u.id)
         except SQLAlchemyError as e:
             QMessageBox.warning(self, "Error", f"Failed to load users: {str(e)}")
+        self.validate_form()  # re-validate after loading
 
     # ==============================
     # Update balance
@@ -195,7 +211,9 @@ class UserAccountForm(QWidget):
     # ==============================
     def save_transaction(self):
         if not self.validate_form():
-            QMessageBox.warning(self, "Validation Error", "Please fix the errors before saving.")
+            QMessageBox.warning(
+                self, "Validation Error", "Please fix the errors before saving."
+            )
             return
 
         user_id = self.user_dropdown.currentData()
