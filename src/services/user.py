@@ -43,10 +43,13 @@ def getUser(user_id):
         return db.get(User, user_id)
 
 
-def getAllUsers(type="user"):
+def getAllUsers(type="all"):
     """Fetch all users of a given type"""
     with SessionLocal() as db:
-        users = db.query(User).filter(User.type == type).all()
+        if type == "all":
+            users = db.query(User).all()
+        else:
+            users = db.query(User).filter(User.type == type).all()
         return users
 
 

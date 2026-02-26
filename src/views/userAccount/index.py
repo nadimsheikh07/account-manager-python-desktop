@@ -59,9 +59,16 @@ class UserAccountList(QWidget):
         self.export_btn.setMinimumHeight(36)
         self.export_btn.clicked.connect(lambda: exportToExcel(self))
 
+        # ===== New Refresh Button =====
+        self.refresh_btn = QPushButton("Refresh")
+        self.refresh_btn.setProperty("class", "secondary")
+        self.refresh_btn.setMinimumHeight(36)
+        self.refresh_btn.clicked.connect(self.load_data)  # reload table data
+
         top_layout.addWidget(self.search_input)
         top_layout.addWidget(self.add_btn)
         top_layout.addWidget(self.export_btn)
+        top_layout.addWidget(self.refresh_btn)  # add to layout
         layout.addLayout(top_layout)
 
         # ===== Table =====

@@ -46,12 +46,24 @@ def getGlobalStylesheet():
             color: {TEXT_LIGHT};
             font-weight: bold;
         }}
-
         QPushButton.primary:hover {{
             background-color: {PRIMARY_DARK_COLOR};
         }}
-
         QPushButton.primary:disabled {{
+            background-color: {DISABLE_BACKGROUND_COLOR};
+            color: {DISABLE_COLOR};
+        }}
+
+        /* ================= SECONDARY BUTTON ================= */
+        QPushButton.secondary {{
+            background-color: {SECONDARY_COLOR};
+            color: {TEXT_LIGHT};
+            font-weight: bold;
+        }}
+        QPushButton.secondary:hover {{
+            background-color: {PRIMARY_COLOR}; /* hover effect blue → teal */
+        }}
+        QPushButton.secondary:disabled {{
             background-color: {DISABLE_BACKGROUND_COLOR};
             color: {DISABLE_COLOR};
         }}
@@ -62,16 +74,13 @@ def getGlobalStylesheet():
             color: {TEXT_LIGHT};
             font-weight: bold;
         }}
-
         QPushButton.danger:hover {{
             background-color: {DANGER_DARK_COLOR};
         }}
-
         QPushButton.danger:disabled {{
             background-color: {DISABLE_BACKGROUND_COLOR};
             color: {DISABLE_COLOR};
         }}
-
 
         /* ================= SIDEBAR BUTTON ================= */
         QPushButton.sidebar {{
@@ -80,11 +89,9 @@ def getGlobalStylesheet():
             text-align: left;
             padding: 10px;
         }}
-
         QPushButton.sidebar:hover {{
             background-color: {SECONDARY_COLOR};
         }}
-
         QPushButton.sidebar:disabled {{
             color: #95a5a6;
         }}
@@ -103,28 +110,23 @@ def getGlobalStylesheet():
             min-height: 28px;
             background-color: #fff;
         }}
-
         QComboBox:hover {{
             border: 1px solid {PRIMARY_COLOR};
         }}
-
         QComboBox:focus {{
             border: 1px solid {PRIMARY_COLOR};
         }}
-
         QComboBox::drop-down {{
             subcontrol-origin: padding;
             subcontrol-position: top right;
             width: 20px;
             border-left: 1px solid {BORDER_COLOR};
         }}
-
         QComboBox::down-arrow {{
-            image: url(:/icons/arrow-down.png); /* optional custom arrow */
+            image: url(:/icons/arrow-down.png);
             width: 12px;
             height: 12px;
         }}
-
         QComboBox QAbstractItemView {{
             border: 1px solid {BORDER_COLOR};
             selection-background-color: {PRIMARY_COLOR};
@@ -134,6 +136,7 @@ def getGlobalStylesheet():
             outline: 0;
         }}
 
+        /* ================= INPUT ERROR ================= */
         QLineEdit[error="true"] {{
             border: 2px solid {DANGER_COLOR};
             border-radius: 6px;
