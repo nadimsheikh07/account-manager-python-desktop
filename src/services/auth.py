@@ -102,6 +102,7 @@ def getUserFromSession():
             return {
                 "name": session.user.name,
                 "email": session.user.email,
+                "type": session.user.type,
             }
 
         return None
