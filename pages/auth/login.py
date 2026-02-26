@@ -158,6 +158,7 @@ class LoginForm(QWidget):
         # Loading state
         self.login_button.setEnabled(False)
         self.login_button.setText("Logging in...")
+        self.login_button.setCursor(Qt.CursorShape.WaitCursor)
         QApplication.processEvents()
 
         # Authenticate
