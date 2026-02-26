@@ -108,17 +108,17 @@ def exportToExcel(self):
     filtered_users = [
         u
         for u in all_users
-        if query in str(u["name"]).lower()
-        or query in str(u["email"]).lower()
-        or query in str(u["contact"]).lower()
+        if query in str(u.name).lower()
+        or query in str(u.email).lower()
+        or query in str(u.contact).lower()
     ]
 
     all_rows = []
 
     for user in filtered_users:
-        user_id = user["id"]
-        name = user["name"]
-        email = user["email"]
+        user_id = user.id
+        name = user.name
+        email = user.email
 
         transactions = getUserTransactions(user_id)
 
