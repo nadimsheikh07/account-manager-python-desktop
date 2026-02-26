@@ -1,10 +1,10 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Qt
-from services.auth import getUserFromSession
-from pages.dashboard.accountsChart import UserAccountsChart
-from pages.dashboard.monthlyUsersChart import MonthlyUsersChart
-from pages.dashboard.userCard import UserCard
-from components.heading import createTitle
+from src.services.auth import getUserFromSession
+from src.pages.dashboard.accountsChart import UserAccountsChart
+from src.pages.dashboard.monthlyUsersChart import MonthlyUsersChart
+from src.pages.dashboard.userCard import UserCard
+from src.components.heading import createTitle
 
 
 class Dashboard(QWidget):

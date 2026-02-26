@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QApplication
 )
 from PySide6.QtCore import Qt, Signal
-from services.auth import authenticateUser
+from src.services.auth import authenticateUser
 from config.theme import getGlobalStylesheet
 from utils.formUtils import setError
 

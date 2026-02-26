@@ -1,12 +1,15 @@
 import sys
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer, QObject
-from pages.auth.login import LoginForm
+
+from src.pages.auth.login import LoginForm
 from main import MainApp
-from services.auth import getCurrentSession
-from services.dbSetup import init_db
+from src.services.auth import getCurrentSession
 from splash import showSplash
 
+from config.db import Base, engine
+from src.models import *  # ensures models are registered
+from src.services.dbSetup import init_db
 
 class AppLauncher(QObject):
     """
@@ -22,11 +25,9 @@ class AppLauncher(QObject):
         self.main_window = None
         self.login_window = None
 
-        # Delay a single shot to allow splash to render
         QTimer.singleShot(100, self.launch_app)
 
     def launch_app(self):
-        # Check current session
         user = getCurrentSession()
         self.splash.close()
 
@@ -50,9 +51,18 @@ class AppLauncher(QObject):
 
 
 def main():
-    init_db()  # ensure DB is ready
+    # 🔹 1. Initialize DB
+    init_db()
+
+    # 🔹 2. Create tables (SQLAlchemy)
+    Base.metadata.create_all(bind=engine)
+
+    # 🔹 3. Start Qt application
     app = QApplication(sys.argv)
+
+    # 🔹 4. Launch app controller
     launcher = AppLauncher(app)
+
     sys.exit(app.exec())
 
 

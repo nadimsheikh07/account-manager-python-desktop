@@ -9,9 +9,11 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from PySide6.QtCore import Qt
-from services.userAccount import addTransaction, getUserBalance
-from services.user import getAllUsers
 from config.theme import getGlobalStylesheet
+from src.services.user import getAllUsers
+from src.services.userAccount import addTransaction, getUserBalance
+from src.models import User  # ORM model
+from sqlalchemy.exc import SQLAlchemyError
 
 
 class UserAccountForm(QWidget):
@@ -50,7 +52,6 @@ class UserAccountForm(QWidget):
         grid.addWidget(self.user_dropdown, 0, 1)
 
         if self.user_id:
-            # Preselect the User if provided
             index = self.user_dropdown.findData(self.user_id)
             if index != -1:
                 self.user_dropdown.setCurrentIndex(index)
@@ -92,31 +93,29 @@ class UserAccountForm(QWidget):
         layout.addWidget(self.save_btn, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.setLayout(layout)
-
-        # Initial balance
         self.update_balance()
 
     def load_users(self):
-        """Load all Users into the dropdown"""
+        """Load all Users into the dropdown (ORM)"""
         self.user_dropdown.clear()
-        users = getAllUsers()
-        for user in users:
-            user_id = user["id"]
-            name = user["name"]
-            email = user["email"]
-            contact = user["contact"]
-            address = user["address"]
-            date = user["date"]
-            type = user["type"]
-            display_text = f"{name} ({email})"
-            self.user_dropdown.addItem(display_text, user_id)
+        try:
+            users = getAllUsers()  # ORM service returns list of User objects
+            for u in users:
+                display_text = f"{u.name} ({u.email})"
+                self.user_dropdown.addItem(display_text, u.id)
+        except SQLAlchemyError as e:
+            QMessageBox.warning(self, "Error", f"Failed to load users: {str(e)}")
 
     def update_balance(self):
         """Update current balance display for selected User"""
         user_id = self.user_dropdown.currentData()
         if user_id:
-            balance = getUserBalance(user_id)
-            self.balance_label.setText(f"{balance:.2f}")
+            try:
+                balance = getUserBalance(user_id)
+                self.balance_label.setText(f"{balance:.2f}")
+            except SQLAlchemyError as e:
+                self.balance_label.setText("0.00")
+                print("Balance fetch error:", e)
         else:
             self.balance_label.setText("0.00")
 
@@ -141,9 +140,10 @@ class UserAccountForm(QWidget):
             return
 
         try:
+            # ORM-based transaction add
             addTransaction(user_id, amount, type_, description)
             QMessageBox.information(self, "Success", "Transaction added successfully.")
             self.refresh_callback()
             self.close()
-        except Exception as e:
-            QMessageBox.warning(self, "Error", str(e))
+        except SQLAlchemyError as e:
+            QMessageBox.warning(self, "Database Error", f"Failed to save: {str(e)}")

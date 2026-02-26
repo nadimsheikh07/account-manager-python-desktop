@@ -11,16 +11,16 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from functools import partial
+from datetime import datetime
 from config.theme import getGlobalStylesheet
-from services.user import getAllUsers
-from services.userAccount import (
+from src.services.user import getAllUsers
+from src.services.userAccount import (
     getUserTransactions,
-    deleteTransaction,  # we’ll assume we add this to the service
+    deleteTransaction,
     exportToExcel,
 )
-from pages.userAccount.form import UserAccountForm
-from datetime import datetime
-from components.heading import createTitle
+from src.pages.userAccount.form import UserAccountForm
+from src.components.heading import createTitle
 
 
 class UserAccountList(QWidget):
@@ -36,7 +36,7 @@ class UserAccountList(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
-        layout.addWidget(createTitle("user Accounts"))
+        layout.addWidget(createTitle("User Accounts"))
 
         # ===== Top Bar =====
         top_layout = QHBoxLayout()
@@ -58,30 +58,26 @@ class UserAccountList(QWidget):
         self.export_btn.setProperty("class", "primary")
         self.export_btn.setMinimumHeight(36)
         self.export_btn.clicked.connect(lambda: exportToExcel(self))
+
         top_layout.addWidget(self.search_input)
         top_layout.addWidget(self.add_btn)
         top_layout.addWidget(self.export_btn)
-
         layout.addLayout(top_layout)
 
         # ===== Table =====
         self.table = QTableWidget()
         self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels(
-            ["ID", "user", "Email", "CR", "DR", "Balance", "Date", "Actions"]
+            ["ID", "User", "Email", "CR", "DR", "Balance", "Date", "Actions"]
         )
-
         self.table.setSortingEnabled(True)
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-
         self.table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
         )
-
-        # Hide ID column
-        self.table.setColumnHidden(0, True)
+        self.table.setColumnHidden(0, True)  # Hide ID column
 
         layout.addWidget(self.table)
         self.setLayout(layout)
@@ -91,54 +87,48 @@ class UserAccountList(QWidget):
     # =========================
     def load_data(self):
         self.table.setSortingEnabled(False)
-        all_users = getAllUsers()
+
+        # Fetch all users (ORM objects) and convert to dict for filtering
+        all_users = [self._orm_to_dict(u) for u in getAllUsers()]
         query = self.search_input.text().lower()
 
-        # Filter safely using dictionary access
+        # Filter users
         filtered = [
-            user
-            for user in all_users
-            if query in str(user["name"] or "").lower()
-            or query in str(user["email"] or "").lower()
-            or query in str(user["contact"] or "").lower()
-            or query in str(user["address"] or "").lower()
-            or query in str(user["date"] or "").lower()
+            u
+            for u in all_users
+            if query in str(u.get("name", "")).lower()
+            or query in str(u.get("email", "")).lower()
+            or query in str(u.get("contact", "")).lower()
+            or query in str(u.get("address", "")).lower()
+            or query in str(u.get("date", "")).lower()
         ]
 
-        # Gather all transactions for filtered users
+        # Gather transactions for filtered users
         all_rows = []
         for user in filtered:
             user_id = user["id"]
-            name = user["name"]
-            email = user["email"]
-            contact = user["contact"]
-            address = user["address"]
-            date = user["date"]
-            type = user["type"]
-            transactions = getUserTransactions(user_id)
-
-            # Sort transactions by date (and optionally by ID)
-            transactions.sort(
-                key=lambda t: datetime.strptime(t[4], "%Y-%m-%d %H:%M:%S")
-            )
+            transactions = getUserTransactions(user_id)  # ORM tuples/list
+            # Sort by date
+            transactions.sort(key=lambda t: t.date)  # t.date is datetime
 
             running_balance = 0.0
-            for t in transactions:
-                trx_id, trx_type, amount, description, date = t
+            for trx in transactions:
+                trx_id = trx.id
+                trx_type = trx.type
+                amount = trx.amount
+                description = trx.description
+                date = trx.date.strftime("%Y-%m-%d %H:%M:%S") if trx.date else ""
 
-                if trx_type == "CR":
-                    running_balance += amount
-                elif trx_type == "DR":
-                    running_balance -= amount
+                running_balance += amount if trx_type == "CR" else -amount
 
                 all_rows.append(
                     (
                         trx_id,
-                        name,
-                        email,
-                        trx_type,
-                        amount,
-                        running_balance,  # <-- running balance
+                        user["name"],
+                        user["email"],
+                        amount if trx_type == "CR" else 0.0,
+                        amount if trx_type == "DR" else 0.0,
+                        running_balance,
                         date,
                         description,
                         user_id,
@@ -148,23 +138,14 @@ class UserAccountList(QWidget):
         self.table.setRowCount(len(all_rows))
 
         for row_idx, row in enumerate(all_rows):
-            (
-                trx_id,
-                name,
-                email,
-                trx_type,
-                amount,
-                balance,
-                date,
-                description,
-                user_id,
-            ) = row
+            trx_id, name, email, cr, dr, balance, date, description, user_id = row
+
             row_data = [
                 trx_id,
                 name,
                 email,
-                f"{amount:.2f}" if trx_type == "CR" else "",
-                f"{amount:.2f}" if trx_type == "DR" else "",
+                f"{cr:.2f}" if cr else "",
+                f"{dr:.2f}" if dr else "",
                 f"{balance:.2f}",
                 date,
             ]
@@ -181,12 +162,12 @@ class UserAccountList(QWidget):
 
             delete_btn = QPushButton("Delete")
             delete_btn.setProperty("class", "danger")
-            delete_btn.clicked.connect(partial(self.deleteTransaction, trx_id))
+            delete_btn.clicked.connect(partial(self.delete_transaction, trx_id))
 
             action_layout = QHBoxLayout()
+            action_layout.setContentsMargins(0, 0, 0, 0)
             action_layout.addWidget(edit_btn)
             action_layout.addWidget(delete_btn)
-            action_layout.setContentsMargins(0, 0, 0, 0)
 
             action_widget = QWidget()
             action_widget.setLayout(action_layout)
@@ -195,10 +176,24 @@ class UserAccountList(QWidget):
         self.table.setSortingEnabled(True)
 
     # =========================
+    # Helper
+    # =========================
+    def _orm_to_dict(self, user):
+        """Convert ORM User to dict for table filtering"""
+        return {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "contact": user.contact,
+            "address": user.address,
+            "date": user.date.strftime("%Y-%m-%d %H:%M:%S") if user.date else "",
+            "type": user.type,
+        }
+
+    # =========================
     # Actions
     # =========================
     def open_add_form(self, user_id=None):
-        """Open form for adding CR/DR transaction"""
         self.account_form = UserAccountForm(
             refresh_callback=self.load_data,
             user_id=user_id,
@@ -206,14 +201,14 @@ class UserAccountList(QWidget):
         self.account_form.show()
 
     def edit_transaction(self, trx_id, user_id):
-        """Edit transaction - for now, re-use the add form"""
         self.account_form = UserAccountForm(
             refresh_callback=self.load_data,
             user_id=user_id,
+            trx_id=trx_id,
         )
         self.account_form.show()
 
-    def deleteTransaction(self, trx_id):
+    def delete_transaction(self, trx_id):
         confirm = QMessageBox.question(
             self,
             "Confirm Delete",
@@ -221,7 +216,7 @@ class UserAccountList(QWidget):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
-            deleteTransaction(trx_id)
+            deleteTransaction(trx_id)  # ORM-based
             QMessageBox.information(
                 self, "Deleted", "Transaction deleted successfully."
             )

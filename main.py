@@ -4,12 +4,12 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QFrame,
 )
-from components.sidebar import Sidebar
-from pages.auth.login import LoginForm
-from pages.auth.dashboard import Dashboard
-from pages.user.index import UserList
-from pages.userAccount.index import UserAccountList
-from services.auth import logout
+from src.components.sidebar import Sidebar
+from src.pages.auth.login import LoginForm
+from src.pages.auth.dashboard import Dashboard
+from src.pages.user.index import UserList
+from src.pages.userAccount.index import UserAccountList
+from src.services.auth import logout
 from config.theme import getGlobalStylesheet
 from config.app import APP_NAME
 

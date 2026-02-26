@@ -2,12 +2,13 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter
-from services.userAccount import getMonthlyAccountSummary  # custom function
+from src.services.user import getMonthlyUserEntries
+from datetime import datetime
 
 
-class UserAccountsChart(QWidget):
+class MonthlyUsersChart(QWidget):
     """
-    Chart showing monthly Credit (CR) and Debit (DR) totals.
+    Component showing monthly new user registrations.
     """
 
     def __init__(self):
@@ -19,7 +20,7 @@ class UserAccountsChart(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setSpacing(10)
 
-        title = QLabel("Monthly User Accounts")
+        title = QLabel("Monthly User Entries")
         title.setStyleSheet("font-size: 18px; font-weight: bold;")
         layout.addWidget(title)
 
@@ -29,27 +30,24 @@ class UserAccountsChart(QWidget):
         self.setLayout(layout)
 
     def create_chart(self) -> QChartView:
-        # Fetch monthly account summary from DB
-        # Expected format: [(YYYY-MM, total_cr, total_dr), ...]
-        monthly_data = getMonthlyAccountSummary()
+        # Fetch monthly user data
+        monthly_data = getMonthlyUserEntries()  # [(YYYY-MM, total), ...]
 
-        cr_set = QBarSet("Credit (CR)")
-        dr_set = QBarSet("Debit (DR)")
+        bar_set = QBarSet("New Users")
         categories = []
 
-        for year_month, total_cr, total_dr in monthly_data:
-            categories.append(year_month)  # e.g., "2026-01"
-            cr_set.append(total_cr)
-            dr_set.append(total_dr)
+        for year_month, total in monthly_data:
+            dt = datetime.strptime(year_month, "%Y-%m")
+            categories.append(dt.strftime("%B %Y"))  # e.g., "January 2026"
+            bar_set.append(total)
 
         series = QBarSeries()
-        series.append(cr_set)
-        series.append(dr_set)
+        series.append(bar_set)
 
         chart = QChart()
         chart.addSeries(series)
-        chart.setTitle("Monthly Credits vs Debits")
         chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
+        chart.setTitle("Monthly User Entries")
 
         axis_x = QBarCategoryAxis()
         axis_x.append(categories)

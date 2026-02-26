@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from PySide6.QtCore import Qt
-from services.user import addUser, getUser, updateUser
+from src.services.user import addUser, getUser, updateUser
 from config.theme import getGlobalStylesheet
 
 
@@ -21,8 +21,8 @@ class UserForm(QWidget):
         super().__init__()
         self.user_id = user_id
         self.user_type = user_type
-
         self.refresh_callback = refresh_callback
+
         self.setWindowTitle("User Form")
         self.setMinimumSize(400, 350)
         self.setStyleSheet(getGlobalStylesheet())
@@ -82,18 +82,20 @@ class UserForm(QWidget):
         self.setLayout(layout)
 
     def load_user(self):
-        """Load user data for editing"""
-        user = getUser(self.user_id)
-
+        """Load user data for editing (ORM)"""
+        user = getUser(self.user_id)  # returns ORM object
         if not user:
+            QMessageBox.warning(self, "Error", "User not found.")
+            self.close()
             return
 
-        self.name_input.setText(user["name"] or "")
-        self.email_input.setText(user["email"] or "")
-        self.contact_input.setText(user["contact"] or "")
-        self.address_input.setText(user["address"] or "")
+        self.name_input.setText(user.name or "")
+        self.email_input.setText(user.email or "")
+        self.contact_input.setText(user.contact or "")
+        self.address_input.setText(user.address or "")
 
     def save_user(self):
+        """Save or update user (ORM)"""
         name = self.name_input.text().strip()
         email = self.email_input.text().strip()
         contact = self.contact_input.text().strip()

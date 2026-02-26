@@ -13,12 +13,11 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from functools import partial
 from config.theme import getGlobalStylesheet
-from services.user import getAllUsers, delete_user, exportToExcel
-from pages.user.form import UserForm
-from services.userAccount import getUserBalance
-from services.userReport import exportUserPdf
-from components.heading import createTitle
-
+from src.services.user import getAllUsers, delete_user, exportToExcel
+from src.services.userAccount import getUserBalance
+from src.services.userLedger import exportUserPdf
+from src.components.heading import createTitle
+from src.pages.user.form import UserForm
 
 class UserList(QWidget):
     TYPE_MAP = {
@@ -104,12 +103,25 @@ class UserList(QWidget):
         self.table.setSortingEnabled(False)
 
         selected_type = self._get_selected_type()
-        users = [dict(row) for row in getAllUsers(selected_type)]
-        filtered_users = self._filter_users(users)
+        users = getAllUsers(selected_type)  # returns ORM objects
+        users = [self._orm_to_dict(u) for u in users]
 
+        filtered_users = self._filter_users(users)
         self._populate_table(filtered_users)
 
         self.table.setSortingEnabled(True)
+
+    def _orm_to_dict(self, user):
+        """Convert ORM User object to dict for table population"""
+        return {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "contact": user.contact,
+            "address": user.address,
+            "date": user.date.strftime("%Y-%m-%d %H:%M:%S") if user.date else "",
+            "type": user.type,
+        }
 
     def _get_selected_type(self):
         tab_text = self.tabs.tabText(self.tabs.currentIndex()).lower()
@@ -131,9 +143,7 @@ class UserList(QWidget):
 
         for row, user in enumerate(users):
             user_id = user.get("id")
-
-            # ⚠ If possible, optimize this by fetching balances in bulk
-            balance = getUserBalance(user_id)
+            balance = getUserBalance(user_id)  # ORM-based
 
             row_data = [
                 user_id,
