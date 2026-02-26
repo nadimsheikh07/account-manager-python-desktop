@@ -146,8 +146,14 @@ class UserAccountForm(QWidget):
             for u in users:
                 display_text = f"{u.name} ({u.email})"
                 self.user_dropdown.addItem(display_text, u.id)
+
+            # Automatically select first user if available
+            if users:
+                self.user_dropdown.setCurrentIndex(0)
+
         except SQLAlchemyError as e:
             QMessageBox.warning(self, "Error", f"Failed to load users: {str(e)}")
+
         self.validate_form()  # re-validate after loading
 
     # ==============================
