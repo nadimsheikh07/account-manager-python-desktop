@@ -36,14 +36,19 @@ class PDFExporter:
         self.row_height = 70
 
     def draw_title(self, title, font_size=16):
+        if not title:
+            title = "Untitled Report"  # default if title is None
         self.painter.setFont(QFont("Arial", font_size, QFont.Weight.Bold))
         self.painter.drawText(self.margin, self.y, title)
         self.y += 80
         self.painter.setFont(QFont("Arial", 10))
 
     def draw_user_info(self, user_info: dict):
+        if not user_info:
+            user_info = {"Info": "No user information provided"}  # default fallback
         for key, value in user_info.items():
-            self.painter.drawText(self.margin, self.y, f"{key}: {value or ''}")
+            safe_value = value if value is not None else ""  # null check
+            self.painter.drawText(self.margin, self.y, f"{key}: {safe_value}")
             self.y += 50
         self.y += 10
         self.painter.drawLine(
@@ -58,6 +63,9 @@ class PDFExporter:
         col_widths=None,
         alternate_row_color=QColor(245, 245, 245),
     ):
+        if not columns or not data_rows:
+            return  # Nothing to draw
+
         # If no column widths, divide equally
         if not col_widths:
             col_widths = [self.usable_width // len(columns)] * len(columns)
@@ -70,7 +78,7 @@ class PDFExporter:
                 self.painter.drawText(
                     QRect(x + 5, self.y, col_widths[i] - 10, self.row_height),
                     Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
-                    col,
+                    str(col or ""),  # null-safe
                 )
                 x += col_widths[i]
             self.y += self.row_height
@@ -100,6 +108,8 @@ class PDFExporter:
             for i, cell in enumerate(row):
                 self.painter.drawRect(x, self.y, col_widths[i], self.row_height)
 
+                safe_cell = "" if cell is None else str(cell)  # null-safe
+
                 # Align numbers right, others left, Type center
                 if i == 1:  # Type
                     alignment = Qt.AlignmentFlag.AlignCenter
@@ -115,13 +125,15 @@ class PDFExporter:
                 self.painter.drawText(
                     QRect(x + 5, self.y, col_widths[i] - 10, self.row_height),
                     alignment,
-                    str(cell),
+                    safe_cell,
                 )
                 x += col_widths[i]
 
             self.y += self.row_height
 
     def draw_summary(self, summary: dict):
+        if not summary:
+            return  # skip if empty
         self.y += 40
         self.painter.drawLine(
             self.margin, self.y, self.page_width - self.margin, self.y
@@ -129,7 +141,13 @@ class PDFExporter:
         self.y += 60
         self.painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         for key, value in summary.items():
-            self.painter.drawText(self.margin, self.y, f"{key}: {value:,.2f}")
+            if isinstance(value, (int, float)):
+                display_value = f"{value:,.2f}"  # format numbers
+            elif value is None:
+                display_value = "0.00"  # default for None
+            else:
+                display_value = str(value)  # leave strings as-is
+            self.painter.drawText(self.margin, self.y, f"{key}: {display_value}")
             self.y += 50
 
     def finish(self):
