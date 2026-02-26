@@ -18,6 +18,7 @@ class Category(Base):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True)
+    parent_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"))
     name = Column(String, unique=True, nullable=False)
     description = Column(Text)
     date = Column(DateTime, server_default=func.now())
@@ -59,7 +60,6 @@ class ProductStock(Base):
     product_id = Column(
         Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False
     )
-
     quantity = Column(Integer, nullable=False)
     last_updated = Column(DateTime, server_default=func.now())
 
