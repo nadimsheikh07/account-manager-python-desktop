@@ -11,6 +11,7 @@ class Sidebar(QFrame):
     dashboard_clicked = Signal()
     users_clicked = Signal()
     accounts_clicked = Signal()
+    inventory_clicked = Signal()
     logout_clicked = Signal()
     toggle_clicked = Signal()
 
@@ -45,6 +46,11 @@ class Sidebar(QFrame):
                 self.accounts_clicked.emit,
             ),
             (
+                "Inventory",
+                QStyle.StandardPixmap.SP_DriveHDIcon,
+                self.inventory_clicked.emit,
+            ),
+            (
                 "Logout",
                 QStyle.StandardPixmap.SP_DialogCloseButton,
                 self.logout_clicked.emit,
@@ -73,11 +79,11 @@ class Sidebar(QFrame):
     def toggle_sidebar(self):
         if self.sidebar_expanded:
             self.setFixedWidth(60)
-            for label in ["Dashboard", "Users", "Accounts", "Logout"]:
+            for label in ["Dashboard", "Users", "Accounts", "Inventory", "Logout"]:
                 self.buttons[label].setText("")
         else:
             self.setFixedWidth(200)
-            for label in ["Dashboard", "Users", "Accounts", "Logout"]:
+            for label in ["Dashboard", "Users", "Accounts", "Inventory", "Logout"]:
                 self.buttons[label].setText(label)
 
         self.sidebar_expanded = not self.sidebar_expanded
@@ -86,7 +92,7 @@ class Sidebar(QFrame):
     # Active Highlight
     # ========================================
     def set_active(self, active_label):
-        for label in ["Dashboard", "Users", "Accounts"]:
+        for label in ["Dashboard", "Users", "Accounts", "Inventory", "Logout"]:
             btn = self.buttons[label]
             btn.setProperty("active", label == active_label)
             btn.style().unpolish(btn)

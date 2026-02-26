@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 from src.components.sidebar import Sidebar
 from src.views.auth.login import LoginForm
 from src.views.auth.dashboard import Dashboard
+from src.views.product import InventoryPanel
 from src.views.user.index import UserList
 from src.views.userAccount.index import UserAccountList
 from src.services.auth import logout
@@ -34,6 +35,7 @@ class MainApp(QWidget):
         self.sidebar.dashboard_clicked.connect(self.show_dashboard)
         self.sidebar.users_clicked.connect(self.show_users)
         self.sidebar.accounts_clicked.connect(self.show_user_accounts)
+        self.sidebar.inventory_clicked.connect(self.show_inventory)
         self.sidebar.logout_clicked.connect(self.handle_logout)
 
         # ================= Content =================
@@ -74,6 +76,11 @@ class MainApp(QWidget):
         self.clear_content()
         self.sidebar.set_active("Accounts")
         self.content_layout.addWidget(UserAccountList())
+
+    def show_inventory(self):
+        self.clear_content()
+        self.sidebar.set_active("Inventory")
+        self.content_layout.addWidget(InventoryPanel())
 
     # ==========================================
     # Login Handling

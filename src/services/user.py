@@ -88,7 +88,7 @@ def updateUser(
             raise ValueError("Email already exists")
 
 
-def delete_user(user_id):
+def deleteUser(user_id):
     """Delete a user by ID"""
     with SessionLocal() as db:
         user = db.get(User, user_id)

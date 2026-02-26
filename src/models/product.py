@@ -8,10 +8,12 @@ from sqlalchemy import (
     Float,
     CheckConstraint,
     Index,
+    Enum
 )
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from config.db import Base
+import enum
 
 
 class Category(Base):
@@ -53,6 +55,12 @@ class Product(Base):
     sale_items = relationship("SaleOrderProduct", back_populates="product")
 
 
+# Define stock type enum
+class StockType(enum.Enum):
+    IN = "in"
+    OUT = "out"
+
+
 class ProductStock(Base):
     __tablename__ = "product_stocks"
 
@@ -61,7 +69,8 @@ class ProductStock(Base):
         Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False
     )
     quantity = Column(Integer, nullable=False)
-    last_updated = Column(DateTime, server_default=func.now())
+    type = Column(Enum(StockType), nullable=False, server_default=StockType.IN.value)
+    last_updated = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
     __table_args__ = (
         CheckConstraint("quantity >= 0", name="check_stock_quantity"),

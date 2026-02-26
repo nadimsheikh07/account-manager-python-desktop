@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from functools import partial
 from config.theme import getGlobalStylesheet
-from src.services.user import getAllUsers, delete_user, exportToExcel
+from src.services.user import getAllUsers, deleteUser, exportToExcel
 from src.services.userAccount import getUserBalance
 from src.services.userLedger import exportUserPdf
 from src.components.heading import createTitle
@@ -173,11 +173,11 @@ class UserList(QWidget):
     def _create_action_buttons(self, user_id):
         edit_btn = QPushButton("Edit")
         edit_btn.setProperty("class", "primary")
-        edit_btn.clicked.connect(partial(self.edit_user, user_id))
+        edit_btn.clicked.connect(partial(self.editUser, user_id))
 
         delete_btn = QPushButton("Delete")
         delete_btn.setProperty("class", "danger")
-        delete_btn.clicked.connect(partial(self.delete_user, user_id))
+        delete_btn.clicked.connect(partial(self.deleteUser, user_id))
 
         pdf_btn = QPushButton("PDF")
         pdf_btn.setProperty("class", "primary")
@@ -201,14 +201,14 @@ class UserList(QWidget):
         self.user_form = UserForm(refresh_callback=self.load_data, user_type=user_type)
         self.user_form.show()
 
-    def edit_user(self, user_id):
+    def editUser(self, user_id):
         user_type = self._get_selected_type()
         self.user_form = UserForm(
             refresh_callback=self.load_data, user_type=user_type, user_id=user_id
         )
         self.user_form.show()
 
-    def delete_user(self, user_id):
+    def deleteUser(self, user_id):
         confirm = QMessageBox.question(
             self,
             "Confirm Delete",
@@ -217,6 +217,6 @@ class UserList(QWidget):
         )
 
         if confirm == QMessageBox.StandardButton.Yes:
-            delete_user(user_id)
+            deleteUser(user_id)
             QMessageBox.information(self, "Deleted", "User deleted successfully.")
             self.load_data()
