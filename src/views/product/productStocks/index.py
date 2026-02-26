@@ -9,12 +9,12 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QHeaderView,
 )
-from PySide6.QtCore import Qt
 from functools import partial
 from config.theme import getGlobalStylesheet
 from src.services.productStock import getAllProductStocks, deleteProductStock
 from src.components.heading import createTitle
 from src.views.product.productStocks.form import ProductStockForm
+from PySide6.QtCore import QTimer
 
 
 class ProductStockList(QWidget):
@@ -24,6 +24,8 @@ class ProductStockList(QWidget):
         self.setStyleSheet(getGlobalStylesheet())
 
         self.init_ui()
+        # Load data after the event loop starts
+        QTimer.singleShot(0, self.load_data)
         self.load_data()
 
     def init_ui(self):
@@ -50,9 +52,9 @@ class ProductStockList(QWidget):
         layout.addLayout(top_layout)
 
         self.table = QTableWidget()
-        self.table.setColumnCount(5)
+        self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(
-            ["ID", "Product", "Quantity", "Last Updated", "Actions"]
+            ["ID", "Product", "Type", "Quantity", "Last Updated", "Actions"]
         )
         self.table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
@@ -76,8 +78,8 @@ class ProductStockList(QWidget):
         return {
             "id": s.id,
             "product": s.product.name if s.product else "",
-            "quantity": s.quantity,
             "type": s.type,
+            "quantity": s.quantity,
             "last_updated": (
                 s.last_updated.strftime("%Y-%m-%d %H:%M:%S") if s.last_updated else ""
             ),
@@ -88,10 +90,10 @@ class ProductStockList(QWidget):
         for row, s in enumerate(stocks):
             self.table.setItem(row, 0, QTableWidgetItem(str(s["id"])))
             self.table.setItem(row, 1, QTableWidgetItem(s["product"]))
-            self.table.setItem(row, 2, QTableWidgetItem(s["type"]))
-            self.table.setItem(row, 2, QTableWidgetItem(str(s["quantity"])))
-            self.table.setItem(row, 3, QTableWidgetItem(s["last_updated"]))
-            self.table.setCellWidget(row, 4, self._create_action_buttons(s["id"]))
+            self.table.setItem(row, 2, QTableWidgetItem(s["type"].name))
+            self.table.setItem(row, 3, QTableWidgetItem(str(s["quantity"])))
+            self.table.setItem(row, 4, QTableWidgetItem(s["last_updated"]))
+            self.table.setCellWidget(row, 5, self._create_action_buttons(s["id"]))
 
     def _create_action_buttons(self, stock_id):
         edit_btn = QPushButton("Edit")

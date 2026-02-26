@@ -44,6 +44,7 @@ def getProductStock(stock_id):
 def getAllProductStocks(product_id=None):
     """Return all stocks, with product info, optionally filtered by product_id"""
     with SessionLocal() as db:
+        # Eagerly load the product relationship
         query = db.query(ProductStock).options(joinedload(ProductStock.product))
         if product_id is not None:
             query = query.filter(ProductStock.product_id == product_id)
