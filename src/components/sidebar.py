@@ -12,6 +12,7 @@ class Sidebar(QFrame):
     users_clicked = Signal()
     accounts_clicked = Signal()
     inventory_clicked = Signal()
+    purchase_orders_clicked = Signal()  # NEW
     logout_clicked = Signal()
     toggle_clicked = Signal()
 
@@ -51,6 +52,11 @@ class Sidebar(QFrame):
                 self.inventory_clicked.emit,
             ),
             (
+                "Purchase Orders",  # NEW
+                QStyle.StandardPixmap.SP_FileDialogDetailedView,
+                self.purchase_orders_clicked.emit,
+            ),
+            (
                 "Logout",
                 QStyle.StandardPixmap.SP_DialogCloseButton,
                 self.logout_clicked.emit,
@@ -77,13 +83,22 @@ class Sidebar(QFrame):
     # Toggle
     # ========================================
     def toggle_sidebar(self):
+        labels = [
+            "Dashboard",
+            "Users",
+            "Accounts",
+            "Inventory",
+            "Purchase Orders",  # NEW
+            "Logout",
+        ]
+
         if self.sidebar_expanded:
             self.setFixedWidth(60)
-            for label in ["Dashboard", "Users", "Accounts", "Inventory", "Logout"]:
+            for label in labels:
                 self.buttons[label].setText("")
         else:
             self.setFixedWidth(200)
-            for label in ["Dashboard", "Users", "Accounts", "Inventory", "Logout"]:
+            for label in labels:
                 self.buttons[label].setText(label)
 
         self.sidebar_expanded = not self.sidebar_expanded
@@ -92,7 +107,16 @@ class Sidebar(QFrame):
     # Active Highlight
     # ========================================
     def set_active(self, active_label):
-        for label in ["Dashboard", "Users", "Accounts", "Inventory", "Logout"]:
+        labels = [
+            "Dashboard",
+            "Users",
+            "Accounts",
+            "Inventory",
+            "Purchase Orders",  # NEW
+            "Logout",
+        ]
+
+        for label in labels:
             btn = self.buttons[label]
             btn.setProperty("active", label == active_label)
             btn.style().unpolish(btn)
