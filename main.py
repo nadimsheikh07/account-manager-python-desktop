@@ -10,6 +10,7 @@ from src.views.auth.dashboard import Dashboard
 from src.views.product import InventoryPanel
 from src.views.user.index import UserList
 from src.views.purchaseOrder.index import PurchaseOrderList
+from src.views.saleOrder.index import SaleOrderList
 from src.views.userAccount.index import UserAccountList
 from src.services.auth import logout
 from config.theme import getGlobalStylesheet
@@ -38,6 +39,7 @@ class MainApp(QWidget):
         self.sidebar.accounts_clicked.connect(self.show_user_accounts)
         self.sidebar.inventory_clicked.connect(self.show_inventory)
         self.sidebar.purchase_orders_clicked.connect(self.show_purchase_orders)
+        self.sidebar.sale_orders_clicked.connect(self.show_sale_orders)
         self.sidebar.logout_clicked.connect(self.handle_logout)
 
         # ================= Content =================
@@ -89,6 +91,12 @@ class MainApp(QWidget):
         self.sidebar.set_active("Purchase Orders")
 
         self.content_layout.addWidget(PurchaseOrderList())
+
+    def show_sale_orders(self):
+        self.clear_content()
+        self.sidebar.set_active("Sale Orders")
+
+        self.content_layout.addWidget(SaleOrderList())    
     # ==========================================
     # Login Handling
     # ==========================================

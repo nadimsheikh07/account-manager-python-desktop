@@ -12,7 +12,8 @@ class Sidebar(QFrame):
     users_clicked = Signal()
     accounts_clicked = Signal()
     inventory_clicked = Signal()
-    purchase_orders_clicked = Signal()  # NEW
+    purchase_orders_clicked = Signal()
+    sale_orders_clicked = Signal()  # 🔥 NEW
     logout_clicked = Signal()
     toggle_clicked = Signal()
 
@@ -36,11 +37,7 @@ class Sidebar(QFrame):
                 QStyle.StandardPixmap.SP_ComputerIcon,
                 self.dashboard_clicked.emit,
             ),
-            (
-                "Users",
-                QStyle.StandardPixmap.SP_FileIcon,
-                self.users_clicked.emit,
-            ),
+            ("Users", QStyle.StandardPixmap.SP_FileIcon, self.users_clicked.emit),
             (
                 "Accounts",
                 QStyle.StandardPixmap.SP_DirOpenIcon,
@@ -52,9 +49,14 @@ class Sidebar(QFrame):
                 self.inventory_clicked.emit,
             ),
             (
-                "Purchase Orders",  # NEW
+                "Purchase Orders",
                 QStyle.StandardPixmap.SP_FileDialogDetailedView,
                 self.purchase_orders_clicked.emit,
+            ),
+            (
+                "Sale Orders",  # 🔥 NEW MENU
+                QStyle.StandardPixmap.SP_FileDialogListView,
+                self.sale_orders_clicked.emit,
             ),
             (
                 "Logout",
@@ -83,40 +85,25 @@ class Sidebar(QFrame):
     # Toggle
     # ========================================
     def toggle_sidebar(self):
-        labels = [
-            "Dashboard",
-            "Users",
-            "Accounts",
-            "Inventory",
-            "Purchase Orders",  # NEW
-            "Logout",
-        ]
-
-        if self.sidebar_expanded:
-            self.setFixedWidth(60)
-            for label in labels:
+        for label, _, _ in self.menu_buttons:
+            if label == "☰":
+                continue
+            if self.sidebar_expanded:
                 self.buttons[label].setText("")
-        else:
-            self.setFixedWidth(200)
-            for label in labels:
+            else:
                 self.buttons[label].setText(label)
 
+        self.setFixedWidth(60 if self.sidebar_expanded else 200)
         self.sidebar_expanded = not self.sidebar_expanded
 
     # ========================================
     # Active Highlight
     # ========================================
     def set_active(self, active_label):
-        labels = [
-            "Dashboard",
-            "Users",
-            "Accounts",
-            "Inventory",
-            "Purchase Orders",  # NEW
-            "Logout",
-        ]
+        for label, _, _ in self.menu_buttons:
+            if label == "☰":
+                continue
 
-        for label in labels:
             btn = self.buttons[label]
             btn.setProperty("active", label == active_label)
             btn.style().unpolish(btn)
