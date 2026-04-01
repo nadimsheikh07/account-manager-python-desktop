@@ -63,7 +63,6 @@ def getPurchaseOrder(order_id):
         return (
             db.query(PurchaseOrder)
             .options(
-                selectinload(PurchaseOrder.supplier),
                 selectinload(PurchaseOrder.products).selectinload(
                     PurchaseOrderProduct.product
                 )

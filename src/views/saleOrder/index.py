@@ -14,6 +14,7 @@ from config.theme import getGlobalStylesheet
 from src.services.saleOrder import getAllSaleOrders, deleteSaleOrder
 from src.components.heading import createTitle
 from src.views.saleOrder.form import SaleOrderForm
+from src.views.saleOrder.detail import SaleOrderDetail
 
 
 class SaleOrderList(QWidget):
@@ -79,12 +80,17 @@ class SaleOrderList(QWidget):
             self.table.setCellWidget(row, 4, self._create_action_buttons(order.id))
 
     def _create_action_buttons(self, order_id):
+        view_btn = QPushButton("View")
+        view_btn.setProperty("class", "secondary")
+        view_btn.clicked.connect(partial(self.open_detail_view, order_id))
+
         delete_btn = QPushButton("Delete")
         delete_btn.setProperty("class", "danger")
         delete_btn.clicked.connect(partial(self.delete_order, order_id))
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(view_btn)
         layout.addWidget(delete_btn)
 
         container = QWidget()
@@ -94,6 +100,10 @@ class SaleOrderList(QWidget):
     def open_add_form(self):
         self.form = SaleOrderForm(refresh_callback=self.load_data)
         self.form.show()
+
+    def open_detail_view(self, order_id):
+        self.detail_view = SaleOrderDetail(order_id)
+        self.detail_view.show()
 
     def delete_order(self, order_id):
         confirm = QMessageBox.question(
