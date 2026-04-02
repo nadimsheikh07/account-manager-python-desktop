@@ -1,4 +1,5 @@
 from sqlalchemy import func, case
+from sqlalchemy.orm import joinedload
 from config.db import SessionLocal
 from src.models.user import UserAccount
 from PySide6.QtWidgets import QMessageBox, QFileDialog
@@ -27,6 +28,7 @@ def getUserTransactions(user_id):
     with SessionLocal() as db:
         transactions = (
             db.query(UserAccount)
+            .options(joinedload(UserAccount.user))
             .filter(UserAccount.user_id == user_id)
             .order_by(UserAccount.date.asc())
             .all()
@@ -78,7 +80,7 @@ def deleteTransaction(trx_id):
 def getTransaction(trx_id):
     """Fetch a single transaction by its ID"""
     with SessionLocal() as db:
-        return db.get(UserAccount, trx_id)
+        return db.get(UserAccount, trx_id, options=[joinedload(UserAccount.user)])
 
 
 def updateTransaction(trx_id, user_id, amount, trx_type, description=None):
