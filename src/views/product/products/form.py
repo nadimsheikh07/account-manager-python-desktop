@@ -10,8 +10,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
 )
 from PySide6.QtCore import Qt
-from src.services.product import addProduct, getProduct, updateProduct
-from src.services.category import getAllCategories
+from src.controllers.product_controller import ProductController
 from config.theme import getGlobalStylesheet
 from utils.formUtils import setError
 
@@ -21,6 +20,7 @@ class ProductForm(QWidget):
         super().__init__()
         self.product_id = product_id
         self.refresh_callback = refresh_callback
+        self.controller = ProductController()
 
         self.setWindowTitle("Product Form")
         self.setMinimumSize(400, 300)
@@ -59,7 +59,7 @@ class ProductForm(QWidget):
         # Category
         grid.addWidget(QLabel("Category:"), 6, 0)
         self.category_combo = QComboBox()
-        self.categories = getAllCategories()
+        self.categories = self.controller.get_categories()
         self.category_combo.addItem("Select Category", None)
         for c in self.categories:
             self.category_combo.addItem(c.name, c.id)
@@ -86,6 +86,7 @@ class ProductForm(QWidget):
             input_field.textChanged.connect(
                 lambda _, f=input_field, e=error_label: self.clear_error(f, e)
             )
+        self.category_combo.currentIndexChanged.connect(self.validate_form)
 
         self.setLayout(layout)
 
@@ -102,33 +103,30 @@ class ProductForm(QWidget):
         error_label.setVisible(False)
 
     def validate_form(self):
-        valid = True
-        name = self.name_input.text().strip()
-        if not name:
+        is_valid, errors, _ = self.controller.validate_product_form(
+            name=self.name_input.text(),
+            price_text=self.price_input.text(),
+            category_id=self.category_combo.currentData(),
+        )
+
+        if "name" in errors:
             setError(True, self.name_input)
-            self.name_error.setText("Name is required")
+            self.name_error.setText(errors["name"])
             self.name_error.setVisible(True)
-            valid = False
+        else:
+            self.clear_error(self.name_input, self.name_error)
 
-        price_text = self.price_input.text().strip()
-        try:
-            price = float(price_text)
-            if price < 0:
-                raise ValueError
-        except ValueError:
+        if "price" in errors:
             setError(True, self.price_input)
-            self.price_error.setText("Invalid price")
+            self.price_error.setText(errors["price"])
             self.price_error.setVisible(True)
-            valid = False
+        else:
+            self.clear_error(self.price_input, self.price_error)
 
-        cat_id = self.category_combo.currentData()
-        if not cat_id:
-            valid = False
-
-        self.save_btn.setEnabled(valid)
+        self.save_btn.setEnabled(is_valid)
 
     def load_product(self):
-        product = getProduct(self.product_id)
+        product = self.controller.get_product_by_id(self.product_id)
         if not product:
             QMessageBox.warning(self, "Error", "Product not found.")
             self.close()
@@ -142,29 +140,21 @@ class ProductForm(QWidget):
 
     def save_product(self):
         self.validate_form()
-        if not self.save_btn.isEnabled():
-            QMessageBox.warning(self, "Validation Error", "Please fix errors.")
-            return
-        name = self.name_input.text().strip()
-        sku = self.sku_input.text().strip() or None
-        price = float(self.price_input.text().strip())
-        category_id = self.category_combo.currentData()
-        try:
-            if self.product_id:
-                updateProduct(
-                    self.product_id,
-                    name=name,
-                    sku=sku,
-                    price=price,
-                    category_id=category_id,
-                )
-                QMessageBox.information(
-                    self, "Success", "Product updated successfully."
-                )
+        success, message, errors = self.controller.save_product(
+            product_id=self.product_id,
+            name=self.name_input.text(),
+            sku=self.sku_input.text(),
+            price_text=self.price_input.text(),
+            category_id=self.category_combo.currentData(),
+        )
+
+        if not success:
+            if errors:
+                QMessageBox.warning(self, "Validation Error", message)
             else:
-                addProduct(name, category_id, price, sku)
-                QMessageBox.information(self, "Success", "Product added successfully.")
-            self.refresh_callback()
-            self.close()
-        except ValueError as e:
-            QMessageBox.warning(self, "Error", str(e))
+                QMessageBox.warning(self, "Error", message)
+            return
+
+        QMessageBox.information(self, "Success", message)
+        self.refresh_callback()
+        self.close()

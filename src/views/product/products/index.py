@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from functools import partial
 from config.theme import getGlobalStylesheet
-from src.services.product import getAllProducts, deleteProduct
+from src.controllers.product_controller import ProductController
 from src.components.heading import createTitle
 from src.views.product.products.form import ProductForm
 
@@ -20,6 +20,7 @@ from src.views.product.products.form import ProductForm
 class ProductList(QWidget):
     def __init__(self):
         super().__init__()
+        self.controller = ProductController()
         self.setMinimumSize(700, 400)
         self.setStyleSheet(getGlobalStylesheet())
 
@@ -66,28 +67,9 @@ class ProductList(QWidget):
 
     def load_data(self):
         self.table.setSortingEnabled(False)
-        products = getAllProducts()
-        products = [self._orm_to_dict(p) for p in products]
-        query = self.search_input.text().strip().lower()
-        if query:
-            products = [
-                p
-                for p in products
-                if query in p["name"].lower()
-                or query in (p["sku"] or "").lower()
-                or query in str(p["price"])
-            ]
+        products = self.controller.get_products(self.search_input.text())
         self._populate_table(products)
         self.table.setSortingEnabled(True)
-
-    def _orm_to_dict(self, p):
-        return {
-            "id": p.id,
-            "name": p.name,
-            "sku": p.sku,
-            "price": p.price,
-            "category": getattr(p.category, "name", "") or "",
-        }
 
     def _populate_table(self, products):
         self.table.setRowCount(len(products))
@@ -131,6 +113,6 @@ class ProductList(QWidget):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
-            deleteProduct(product_id)
-            QMessageBox.information(self, "Deleted", "Product deleted successfully.")
+            _, message = self.controller.delete_product(product_id)
+            QMessageBox.information(self, "Deleted", message)
             self.load_data()
