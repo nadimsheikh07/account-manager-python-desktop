@@ -17,6 +17,7 @@ from src.services.user import getAllUsers, deleteUser, exportToExcel
 from src.services.userAccount import getUserBalance
 from src.services.userLedger import exportUserPdf
 from src.components.heading import createTitle
+from src.controllers.user_controller import UserController
 from src.views.user.form import UserForm
 
 
@@ -30,6 +31,7 @@ class UserList(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.controller = UserController()
         self.setMinimumSize(600, 400)
         self.setStyleSheet(getGlobalStylesheet())
 
@@ -111,40 +113,16 @@ class UserList(QWidget):
         self.table.setSortingEnabled(False)
 
         selected_type = self._get_selected_type()
-        users = getAllUsers(selected_type)  # returns ORM objects
-        users = [self._orm_to_dict(u) for u in users]
+        query = self.search_input.text().strip()
+        users = self.controller.get_users(query=query, user_type=selected_type)
 
-        filtered_users = self._filter_users(users)
-        self._populate_table(filtered_users)
+        self._populate_table(users)
 
         self.table.setSortingEnabled(True)
-
-    def _orm_to_dict(self, user):
-        """Convert ORM User object to dict for table population"""
-        return {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "contact": user.contact,
-            "address": user.address,
-            "date": user.date.strftime("%Y-%m-%d %H:%M:%S") if user.date else "",
-            "type": user.type,
-        }
 
     def _get_selected_type(self):
         tab_text = self.tabs.tabText(self.tabs.currentIndex()).lower()
         return self.TYPE_MAP.get(tab_text, "user")
-
-    def _filter_users(self, users):
-        query = self.search_input.text().strip().lower()
-        if not query:
-            return users
-
-        def matches(user):
-            fields = ["name", "email", "contact", "address", "date"]
-            return any(query in str(user.get(field, "")).lower() for field in fields)
-
-        return [user for user in users if matches(user)]
 
     def _populate_table(self, users):
         self.table.setRowCount(len(users))
@@ -217,6 +195,9 @@ class UserList(QWidget):
         )
 
         if confirm == QMessageBox.StandardButton.Yes:
-            deleteUser(user_id)
-            QMessageBox.information(self, "Deleted", "User deleted successfully.")
-            self.load_data()
+            success, message = self.controller.delete_user(user_id)
+            if success:
+                QMessageBox.information(self, "Deleted", message)
+                self.load_data()
+            else:
+                QMessageBox.warning(self, "Error", message)

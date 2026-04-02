@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
 )
 from PySide6.QtCore import Qt
-from src.services.user import addUser, getUser, updateUser
+from src.controllers.user_controller import UserController
 from config.theme import getGlobalStylesheet
 from utils.formUtils import setError  # reuse the same helper from login
 
@@ -17,6 +17,7 @@ from utils.formUtils import setError  # reuse the same helper from login
 class UserForm(QWidget):
     def __init__(self, refresh_callback, user_type="user", user_id=None):
         super().__init__()
+        self.controller = UserController()
         self.user_id = user_id
         self.user_type = user_type
         self.refresh_callback = refresh_callback
@@ -119,44 +120,43 @@ class UserForm(QWidget):
     # ==============================
     def validate_form(self):
         """Validate required fields and enable save button if valid"""
-        valid = True
-
-        # Name validation
         name = self.name_input.text().strip()
-        if not name:
-            setError(True, self.name_input)
-            self.name_error.setText("Name is required")
-            self.name_error.setVisible(True)
-            valid = False
-
-        # Email validation (basic)
         email = self.email_input.text().strip()
-        if not email:
-            setError(True, self.email_input)
-            self.email_error.setText("Email is required")
-            self.email_error.setVisible(True)
-            valid = False
-        elif "@" not in email or "." not in email:
-            setError(True, self.email_input)
-            self.email_error.setText("Invalid email address")
-            self.email_error.setVisible(True)
-            valid = False
-
-        # Optional: contact validation (digits only)
         contact = self.contact_input.text().strip()
-        if contact and not contact.isdigit():
-            setError(True, self.contact_input)
-            self.contact_error.setText("Contact must be numeric")
-            self.contact_error.setVisible(True)
-            valid = False
+        address = self.address_input.text().strip()
+        user_type = self.user_type
 
-        self.save_btn.setEnabled(valid)
+        is_valid, errors, _ = self.controller.validate_user_form(
+            name=name,
+            email=email,
+            contact=contact,
+            address=address,
+            user_type=user_type,
+        )
+
+        # Update UI errors
+        if "name" in errors:
+            setError(True, self.name_input)
+            self.name_error.setText(errors["name"])
+            self.name_error.setVisible(True)
+        
+        if "email" in errors:
+            setError(True, self.email_input)
+            self.email_error.setText(errors["email"])
+            self.email_error.setVisible(True)
+
+        if "contact" in errors:
+            setError(True, self.contact_input)
+            self.contact_error.setText(errors["contact"])
+            self.contact_error.setVisible(True)
+
+        self.save_btn.setEnabled(is_valid)
 
     # ==============================
     # Load user
     # ==============================
     def load_user(self):
-        user = getUser(self.user_id)
+        user = self.controller.get_user_by_id(self.user_id)
         if not user:
             QMessageBox.warning(self, "Error", "User not found.")
             self.close()
@@ -171,33 +171,26 @@ class UserForm(QWidget):
     # Save user
     # ==============================
     def save_user(self):
-        self.validate_form()
-        if not self.save_btn.isEnabled():
-            QMessageBox.warning(self, "Validation Error", "Please fix the errors.")
-            return
-
         name = self.name_input.text().strip()
         email = self.email_input.text().strip()
         contact = self.contact_input.text().strip()
         address = self.address_input.text().strip()
         user_type = self.user_type
 
-        try:
-            if self.user_id:
-                updateUser(
-                    self.user_id,
-                    name=name,
-                    email=email,
-                    contact=contact,
-                    address=address,
-                    user_type=user_type,
-                )
-                QMessageBox.information(self, "Success", "User updated successfully.")
-            else:
-                addUser(name, email, contact, address, user_type)
-                QMessageBox.information(self, "Success", "User added successfully.")
+        success, message, errors = self.controller.save_user(
+            user_id=self.user_id,
+            name=name,
+            email=email,
+            contact=contact,
+            address=address,
+            user_type=user_type,
+        )
 
+        if success:
+            QMessageBox.information(self, "Success", message)
             self.refresh_callback()
             self.close()
-        except ValueError as e:
-            QMessageBox.warning(self, "Error", str(e))
+        else:
+            QMessageBox.warning(self, "Error", message)
+            # errors might contain field-specific errors if we want to show them again
+            # but validate_form should have already handled them.
