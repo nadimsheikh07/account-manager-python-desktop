@@ -9,10 +9,9 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
 )
 from PySide6.QtCore import Qt
-from config.theme import getGlobalStylesheet
+from src.controllers.sale_controller import SaleController
 from src.services.product import getAllProducts
-from src.services.user import getAllUsers  # must exist
-from src.services.saleOrder import createSaleOrder
+from src.services.user import getAllUsers
 
 
 class SaleOrderForm(QWidget):
@@ -22,6 +21,7 @@ class SaleOrderForm(QWidget):
         self.setWindowTitle("Create Sale Order")
         self.setMinimumSize(600, 450)
         self.setStyleSheet(getGlobalStylesheet())
+        self.controller = SaleController()
 
         self.products = getAllProducts()
         self.users = getAllUsers()
@@ -133,9 +133,12 @@ class SaleOrderForm(QWidget):
             return
 
         try:
-            createSaleOrder(user_id, order_items)
-            QMessageBox.information(self, "Success", "Sale order created.")
-            self.refresh_callback()
-            self.close()
-        except ValueError as e:
-            QMessageBox.warning(self, "Error", str(e))
+            success, message, _ = self.controller.save_order(user_id, order_items)
+            if success:
+                QMessageBox.information(self, "Success", message)
+                self.refresh_callback()
+                self.close()
+            else:
+                QMessageBox.warning(self, "Error", message)
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to save: {str(e)}")

@@ -10,10 +10,9 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
 )
 from PySide6.QtCore import Qt
-from config.theme import getGlobalStylesheet
+from src.controllers.purchase_controller import PurchaseController
 from src.services.product import getAllProducts
-from src.services.user import getAllUsers  # must exist
-from src.services.purchaseOrder import createPurchaseOrder
+from src.services.user import getAllUsers
 
 
 class PurchaseOrderForm(QWidget):
@@ -23,6 +22,7 @@ class PurchaseOrderForm(QWidget):
         self.setWindowTitle("Create Purchase Order")
         self.setMinimumSize(600, 450)
         self.setStyleSheet(getGlobalStylesheet())
+        self.controller = PurchaseController()
 
         self.products = getAllProducts()
         self.suppliers = getAllUsers("supplier")
@@ -138,9 +138,12 @@ class PurchaseOrderForm(QWidget):
             return
 
         try:
-            createPurchaseOrder(supplier_id, order_items)
-            QMessageBox.information(self, "Success", "Purchase order created.")
-            self.refresh_callback()
-            self.close()
-        except ValueError as e:
-            QMessageBox.warning(self, "Error", str(e))
+            success, message, _ = self.controller.save_order(supplier_id, order_items)
+            if success:
+                QMessageBox.information(self, "Success", message)
+                self.refresh_callback()
+                self.close()
+            else:
+                QMessageBox.warning(self, "Error", message)
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to save: {str(e)}")

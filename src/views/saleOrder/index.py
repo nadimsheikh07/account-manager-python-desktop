@@ -10,8 +10,7 @@ from PySide6.QtWidgets import (
 )
 from functools import partial
 from PySide6.QtCore import QTimer
-from config.theme import getGlobalStylesheet
-from src.services.saleOrder import getAllSaleOrders, deleteSaleOrder
+from src.controllers.sale_controller import SaleController
 from src.components.heading import createTitle
 from src.views.saleOrder.form import SaleOrderForm
 from src.views.saleOrder.detail import SaleOrderDetail
@@ -22,6 +21,7 @@ class SaleOrderList(QWidget):
         super().__init__()
         self.setMinimumSize(800, 450)
         self.setStyleSheet(getGlobalStylesheet())
+        self.controller = SaleController()
 
         self.init_ui()
         QTimer.singleShot(0, self.load_data)
@@ -59,7 +59,7 @@ class SaleOrderList(QWidget):
         layout.addWidget(self.table)
 
     def load_data(self):
-        orders = getAllSaleOrders()
+        orders = self.controller.get_all_orders()
         self.table.setRowCount(len(orders))
 
         for row, order in enumerate(orders):
@@ -113,6 +113,9 @@ class SaleOrderList(QWidget):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
-            deleteSaleOrder(order_id)
-            QMessageBox.information(self, "Deleted", "Sale order deleted.")
-            self.load_data()
+            success, message = self.controller.delete_order(order_id)
+            if success:
+                QMessageBox.information(self, "Deleted", message)
+                self.load_data()
+            else:
+                QMessageBox.warning(self, "Error", message)

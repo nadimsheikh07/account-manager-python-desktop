@@ -10,11 +10,7 @@ from PySide6.QtWidgets import (
 )
 from functools import partial
 from PySide6.QtCore import QTimer
-from config.theme import getGlobalStylesheet
-from src.services.purchaseOrder import (
-    getAllPurchaseOrders,
-    deletePurchaseOrder,
-)
+from src.controllers.purchase_controller import PurchaseController
 from src.components.heading import createTitle
 from src.views.purchaseOrder.form import PurchaseOrderForm
 from src.views.purchaseOrder.detail import PurchaseOrderDetail
@@ -25,6 +21,7 @@ class PurchaseOrderList(QWidget):
         super().__init__()
         self.setMinimumSize(800, 450)
         self.setStyleSheet(getGlobalStylesheet())
+        self.controller = PurchaseController()
 
         self.init_ui()
         QTimer.singleShot(0, self.load_data)
@@ -62,7 +59,7 @@ class PurchaseOrderList(QWidget):
         layout.addWidget(self.table)
 
     def load_data(self):
-        orders = getAllPurchaseOrders()
+        orders = self.controller.get_all_orders()
         print(f"Loaded {len(orders)} purchase orders")
         self.table.setRowCount(len(orders))
 
@@ -117,6 +114,9 @@ class PurchaseOrderList(QWidget):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
-            deletePurchaseOrder(order_id)
-            QMessageBox.information(self, "Deleted", "Purchase order deleted.")
-            self.load_data()
+            success, message = self.controller.delete_order(order_id)
+            if success:
+                QMessageBox.information(self, "Deleted", message)
+                self.load_data()
+            else:
+                QMessageBox.warning(self, "Error", message)

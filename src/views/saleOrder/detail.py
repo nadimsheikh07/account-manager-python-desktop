@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 from config.theme import getGlobalStylesheet
 from src.components.heading import createTitle
-from src.services.saleOrder import getSaleOrder
+from src.controllers.sale_controller import SaleController
 
 
 class SaleOrderDetail(QWidget):
@@ -19,6 +19,7 @@ class SaleOrderDetail(QWidget):
         self.setWindowTitle(f"Sale Order #{order_id}")
         self.setMinimumSize(760, 460)
         self.setStyleSheet(getGlobalStylesheet())
+        self.controller = SaleController()
 
         self.init_ui()
         self.load_data()
@@ -45,7 +46,7 @@ class SaleOrderDetail(QWidget):
         layout.addWidget(self.table)
 
     def load_data(self):
-        order = getSaleOrder(self.order_id)
+        order = self.controller.get_order_by_id(self.order_id)
         if not order:
             QMessageBox.warning(self, "Not Found", "Sale order not found.")
             self.close()
