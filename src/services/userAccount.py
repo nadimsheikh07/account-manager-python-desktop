@@ -75,6 +75,29 @@ def deleteTransaction(trx_id):
             db.commit()
 
 
+def getTransaction(trx_id):
+    """Fetch a single transaction by its ID"""
+    with SessionLocal() as db:
+        return db.get(UserAccount, trx_id)
+
+
+def updateTransaction(trx_id, user_id, amount, trx_type, description=None):
+    """Update an existing transaction"""
+    if trx_type not in ("CR", "DR"):
+        raise ValueError("Type must be 'CR' or 'DR'")
+
+    with SessionLocal() as db:
+        transaction = db.get(UserAccount, trx_id)
+        if transaction:
+            transaction.user_id = user_id
+            transaction.amount = amount
+            transaction.type = trx_type
+            transaction.description = description
+            db.commit()
+            return True
+        return False
+
+
 def getMonthlyAccountSummary():
     """
     Returns list of (YYYY-MM, total_cr, total_dr)

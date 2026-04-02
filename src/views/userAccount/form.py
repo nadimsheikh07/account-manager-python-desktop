@@ -18,13 +18,15 @@ from utils.formUtils import setError  # reuse error styling helper
 
 
 class UserAccountForm(QWidget):
-    def __init__(self, refresh_callback, user_id=None):
+    def __init__(self, refresh_callback, user_id=None, trx_id=None):
         """
         user_id=None -> Optional, select user from dropdown
+        trx_id=None -> Optional, if provided, load transaction for editing
         refresh_callback -> function to refresh the account list after save
         """
         super().__init__()
         self.user_id = user_id
+        self.trx_id = trx_id
         self.refresh_callback = refresh_callback
         self.setWindowTitle("User Account Form")
         self.setMinimumSize(400, 350)
@@ -38,7 +40,8 @@ class UserAccountForm(QWidget):
         layout.setSpacing(15)
 
         # Title
-        title = QLabel("Add Transaction")
+        title_text = "Edit Transaction" if self.trx_id else "Add Transaction"
+        title = QLabel(title_text)
         title.setStyleSheet("font-size: 18px; font-weight: bold;")
         layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -123,8 +126,41 @@ class UserAccountForm(QWidget):
         # Now safe to load users and update balance
         self.load_users()
         self.setLayout(layout)
+        if self.trx_id:
+            self.load_transaction_data()
         self.update_balance()
         self.validate_form()
+
+    # ==============================
+    # Load Transaction Data for Edit
+    # ==============================
+    def load_transaction_data(self):
+        if not self.trx_id:
+            return
+
+        trx = self.controller.get_transaction(self.trx_id)
+        if trx:
+            # Set user type and load users
+            user = trx.user
+            if user:
+                # Block signals temporarily to prevent multiple loads
+                self.user_type_combo.blockSignals(True)
+                self.user_dropdown.blockSignals(True)
+
+                self.user_type_combo.setCurrentText(user.type)
+                self.load_users()  # Ensure users are loaded for this type
+
+                index = self.user_dropdown.findData(user.id)
+                if index != -1:
+                    self.user_dropdown.setCurrentIndex(index)
+
+                self.user_type_combo.blockSignals(False)
+                self.user_dropdown.blockSignals(False)
+
+            # Set other fields
+            self.type_combo.setCurrentText(trx.type)
+            self.amount_input.setText(str(trx.amount))
+            self.description_input.setText(trx.description or "")
 
     # ==============================
     # Helpers
@@ -160,6 +196,7 @@ class UserAccountForm(QWidget):
     # ==============================
     # Update balance
     # ==============================
+    def update_balance(self):
         user_id = self.user_dropdown.currentData()
         if user_id:
             balance = self.controller.get_user_balance(user_id)
@@ -224,7 +261,7 @@ class UserAccountForm(QWidget):
 
         try:
             success, message = self.controller.save_transaction(
-                user_id, amount, type_, description
+                user_id, amount, type_, description, trx_id=self.trx_id
             )
             if success:
                 QMessageBox.information(self, "Success", message)

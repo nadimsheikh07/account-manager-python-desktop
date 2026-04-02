@@ -4,6 +4,8 @@ from src.services.userAccount import (
     deleteTransaction,
     addTransaction,
     getUserBalance,
+    getTransaction,
+    updateTransaction,
 )
 
 
@@ -67,13 +69,30 @@ class UserAccountController:
         except Exception as e:
             return False, f"Failed to delete transaction: {str(e)}"
 
-    def save_transaction(self, user_id, amount, trx_type, description=None):
-        """Adds a new transaction."""
+    def save_transaction(self, user_id, amount, trx_type, description=None, trx_id=None):
+        """Adds a new transaction or updates an existing one."""
         try:
-            addTransaction(user_id, amount, trx_type, description)
-            return True, "Transaction added successfully."
+            if trx_id:
+                success = updateTransaction(
+                    trx_id, user_id, amount, trx_type, description
+                )
+                return success, (
+                    "Transaction updated successfully."
+                    if success
+                    else "Transaction not found."
+                )
+            else:
+                addTransaction(user_id, amount, trx_type, description)
+                return True, "Transaction added successfully."
         except Exception as e:
-            return False, f"Failed to add transaction: {str(e)}"
+            return False, f"Failed to save transaction: {str(e)}"
+
+    def get_transaction(self, trx_id):
+        """Fetches a single transaction by ID."""
+        try:
+            return getTransaction(trx_id)
+        except Exception:
+            return None
 
     def get_user_balance(self, user_id):
         """Fetches the current balance for a user."""
