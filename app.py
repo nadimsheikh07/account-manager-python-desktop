@@ -6,16 +6,14 @@ from src.views.auth.login import LoginForm
 from main import MainApp
 from src.services.auth import getCurrentSession
 from splash import showSplash
-
-from config.db import Base, engine
-from src.models import *  # ensures models are registered
 from src.services.dbSetup import init_db
 
-class AppLauncher(QObject):
+
+class AppController(QObject):
     """
-    Handles app startup logic:
-    - Shows splash screen
-    - Determines whether to show login or main window
+    Manages the application lifecycle:
+    - Displays the splash screen
+    - Orchestrates transitions between Login and Main windows based on user session state
     """
 
     def __init__(self, app):
@@ -25,44 +23,49 @@ class AppLauncher(QObject):
         self.main_window = None
         self.login_window = None
 
+        # Give the splash screen a moment to stay visible
         QTimer.singleShot(100, self.launch_app)
 
     def launch_app(self):
-        user = getCurrentSession()
+        # 1. Check if user already logged in
+        user_id = getCurrentSession()
+
+        # 2. Close splash
         self.splash.close()
 
-        if user:
-            self.showMain()
+        # 3. Decision logic
+        if user_id:
+            self.show_main()
         else:
-            self.showLogin()
+            self.show_login()
 
-    def showMain(self):
+    def show_main(self):
         self.main_window = MainApp()
         self.main_window.show()
 
-    def showLogin(self):
+    def show_login(self):
         self.login_window = LoginForm()
-        self.login_window.loginSuccessful.connect(self.onLoginSuccess)
+        self.login_window.loginSuccessful.connect(self.on_login_success)
         self.login_window.show()
 
-    def onLoginSuccess(self):
-        self.login_window.close()
-        self.showMain()
+    def on_login_success(self):
+        if self.login_window:
+            self.login_window.close()
+            self.login_window = None
+        self.show_main()
 
 
 def main():
-    # 🔹 1. Initialize DB
+    # 🔹 1. Initialize DB (creates all tables and seeds data if not exists)
     init_db()
 
-    # 🔹 2. Create tables (SQLAlchemy)
-    Base.metadata.create_all(bind=engine)
-
-    # 🔹 3. Start Qt application
+    # 🔹 2. Create Qt application
     app = QApplication(sys.argv)
 
-    # 🔹 4. Launch app controller
-    launcher = AppLauncher(app)
+    # 🔹 3. Launch the app controller
+    _controller = AppController(app)
 
+    # 🔹 4. Run loop
     sys.exit(app.exec())
 
 

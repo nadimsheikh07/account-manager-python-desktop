@@ -12,6 +12,7 @@ from PySide6.QtCore import Qt
 from src.controllers.sale_controller import SaleController
 from src.services.product import getAllProducts
 from src.services.user import getAllUsers
+from config.theme import getGlobalStylesheet
 
 
 class SaleOrderForm(QWidget):

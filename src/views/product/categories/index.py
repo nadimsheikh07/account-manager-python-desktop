@@ -11,7 +11,6 @@ from PySide6.QtWidgets import (
 )
 from functools import partial
 from config.theme import getGlobalStylesheet
-from config.theme import getGlobalStylesheet
 from src.controllers.category_controller import CategoryController
 from src.components.heading import createTitle
 from src.views.product.categories.form import CategoryForm

@@ -1,6 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 from config.db import Base, engine, SessionLocal
-from src.models import User
+import src.models
 import bcrypt
 
 
@@ -22,12 +22,12 @@ def init_db():
 
     try:
         # 3️⃣ Check if admin already exists
-        existing_user = db.query(User).filter(User.username == default_username).first()
+        existing_user = db.query(src.models.User).filter(src.models.User.username == default_username).first()
 
         if not existing_user:
             hashed = bcrypt.hashpw(default_password.encode(), bcrypt.gensalt()).decode()
 
-            admin_user = User(
+            admin_user = src.models.User(
                 name=default_name,
                 username=default_username,
                 email=default_email,

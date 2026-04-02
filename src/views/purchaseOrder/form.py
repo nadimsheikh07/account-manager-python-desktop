@@ -13,7 +13,7 @@ from PySide6.QtCore import Qt
 from src.controllers.purchase_controller import PurchaseController
 from src.services.product import getAllProducts
 from src.services.user import getAllUsers
-
+from config.theme import getGlobalStylesheet
 
 class PurchaseOrderForm(QWidget):
     def __init__(self, refresh_callback):

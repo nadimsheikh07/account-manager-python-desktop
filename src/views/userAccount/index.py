@@ -18,6 +18,7 @@ from src.services.userAccount import (
 )
 from src.views.userAccount.form import UserAccountForm
 from src.components.heading import createTitle
+from config.theme import getGlobalStylesheet
 
 
 class UserAccountList(QWidget):
