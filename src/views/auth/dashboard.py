@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from PySide6.QtCore import Qt
 from src.views.dashboard.accountsChart import UserAccountsChart
 from src.views.dashboard.monthlyUsersChart import MonthlyUsersChart
@@ -15,14 +15,22 @@ class Dashboard(QWidget):
     # Main Layout
     # =============================
     def init_ui(self):
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        layout.setSpacing(15)
+        main_layout = QVBoxLayout()
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        main_layout.setSpacing(15)
 
-        layout.addWidget(createTitle("Dashboard"))
+        main_layout.addWidget(createTitle("Dashboard Overview"))
 
-        layout.addWidget(UserCard())  # New users chart
-        layout.addWidget(MonthlyUsersChart())  # New users chart
-        layout.addWidget(UserAccountsChart())  # new CR/DR chart
+        # Top Section: User Info
+        main_layout.addWidget(UserCard())
 
-        self.setLayout(layout)
+        # Middle Section: Charts in 2 columns
+        charts_row = QHBoxLayout()
+        charts_row.setSpacing(20)
+
+        charts_row.addWidget(MonthlyUsersChart(), 1)
+        charts_row.addWidget(UserAccountsChart(), 1)
+
+        main_layout.addLayout(charts_row)
+
+        self.setLayout(main_layout)

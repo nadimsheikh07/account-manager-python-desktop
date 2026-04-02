@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter
+from PySide6.QtGui import QPainter, QColor
 from src.services.userAccount import getMonthlyAccountSummary  # custom function
 
 
@@ -34,7 +34,11 @@ class UserAccountsChart(QWidget):
         monthly_data = getMonthlyAccountSummary()
 
         cr_set = QBarSet("Credit (CR)")
+        cr_set.setColor(QColor("#2ECC71"))  # Success Green
+
         dr_set = QBarSet("Debit (DR)")
+        dr_set.setColor(QColor("#E74C3C"))  # Danger Red
+
         categories = []
 
         for year_month, total_cr, total_dr in monthly_data:
@@ -49,6 +53,7 @@ class UserAccountsChart(QWidget):
         chart = QChart()
         chart.addSeries(series)
         chart.setTitle("Monthly Credits vs Debits")
+        chart.setTheme(QChart.ChartTheme.ChartThemeLight)
         chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
 
         axis_x = QBarCategoryAxis()

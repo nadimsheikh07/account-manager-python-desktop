@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter
+from PySide6.QtGui import QPainter, QColor
 from src.services.user import getMonthlyUserEntries
 from datetime import datetime
 
@@ -34,6 +34,8 @@ class MonthlyUsersChart(QWidget):
         monthly_data = getMonthlyUserEntries()  # [(YYYY-MM, total), ...]
 
         bar_set = QBarSet("New Users")
+        bar_set.setColor(QColor("#4A90E2"))  # Modern Blue
+
         categories = []
 
         for year_month, total in monthly_data:
@@ -48,6 +50,7 @@ class MonthlyUsersChart(QWidget):
         chart.addSeries(series)
         chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
         chart.setTitle("Monthly User Entries")
+        chart.setTheme(QChart.ChartTheme.ChartThemeLight)
 
         axis_x = QBarCategoryAxis()
         axis_x.append(categories)
