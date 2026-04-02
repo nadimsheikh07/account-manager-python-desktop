@@ -14,6 +14,7 @@ from src.controllers.sale_controller import SaleController
 from src.components.heading import createTitle
 from src.views.saleOrder.form import SaleOrderForm
 from src.views.saleOrder.detail import SaleOrderDetail
+from config.theme import getGlobalStylesheet
 
 
 class SaleOrderList(QWidget):

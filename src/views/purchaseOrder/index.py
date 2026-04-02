@@ -14,6 +14,7 @@ from src.controllers.purchase_controller import PurchaseController
 from src.components.heading import createTitle
 from src.views.purchaseOrder.form import PurchaseOrderForm
 from src.views.purchaseOrder.detail import PurchaseOrderDetail
+from config.theme import getGlobalStylesheet
 
 
 class PurchaseOrderList(QWidget):
