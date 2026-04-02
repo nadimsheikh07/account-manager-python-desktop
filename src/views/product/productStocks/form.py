@@ -10,12 +10,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
 )
 from PySide6.QtCore import Qt
-from src.services.productStock import (
-    addProductStock,
-    getProductStock,
-    updateProductStock,
-)
-from src.services.product import getAllProducts
+from src.controllers.product_stock_controller import ProductStockController
 from config.theme import getGlobalStylesheet
 from utils.formUtils import setError
 
@@ -25,6 +20,7 @@ class ProductStockForm(QWidget):
         super().__init__()
         self.stock_id = stock_id
         self.refresh_callback = refresh_callback
+        self.controller = ProductStockController()
 
         self.setWindowTitle("Product Stock Form")
         self.setMinimumSize(400, 300)
@@ -45,7 +41,7 @@ class ProductStockForm(QWidget):
         # Product
         grid.addWidget(QLabel("Product:"), 0, 0)
         self.product_combo = QComboBox()
-        self.products = getAllProducts()
+        self.products = self.controller.get_products()
         self.product_combo.addItem("Select Product", None)
         for p in self.products:
             self.product_combo.addItem(p.name, p.id)
@@ -100,26 +96,26 @@ class ProductStockForm(QWidget):
         error_label.setVisible(False)
 
     def validate_form(self):
-        valid = True
-        try:
-            qty = int(self.qty_input.text().strip())
-            if qty < 0:
-                raise ValueError
-        except ValueError:
+        product_id = self.product_combo.currentData()
+        qty_text = self.qty_input.text().strip()
+        stock_type = self.type_combo.currentData()
+
+        is_valid, errors, _ = self.controller.validate_stock_form(
+            product_id=product_id, quantity_text=qty_text, stock_type=stock_type
+        )
+
+        if "quantity" in errors:
             setError(True, self.qty_input)
-            self.qty_error.setText("Quantity must be 0 or more")
+            self.qty_error.setText(errors["quantity"])
             self.qty_error.setVisible(True)
-            valid = False
+        else:
+            setError(False, self.qty_input)
+            self.qty_error.setVisible(False)
 
-        if self.product_combo.currentData() is None:
-            valid = False
-        if self.type_combo.currentData() not in ("in", "out"):
-            valid = False
-
-        self.save_btn.setEnabled(valid)
+        self.save_btn.setEnabled(is_valid)
 
     def load_stock(self):
-        stock = getProductStock(self.stock_id)
+        stock = self.controller.get_stock_by_id(self.stock_id)
         if not stock:
             QMessageBox.warning(self, "Error", "Stock not found.")
             self.close()
@@ -130,37 +126,29 @@ class ProductStockForm(QWidget):
         if index >= 0:
             self.product_combo.setCurrentIndex(index)
 
-        if hasattr(stock, "type") and stock.type:
-            type_index = self.type_combo.findData(
-                stock.type.value if hasattr(stock.type, "value") else stock.type
-            )
-            if type_index >= 0:
-                self.type_combo.setCurrentIndex(type_index)
+        # Handle Enum or string for type
+        stock_type = stock.type.value if hasattr(stock.type, "value") else stock.type
+        type_index = self.type_combo.findData(stock_type)
+        if type_index >= 0:
+            self.type_combo.setCurrentIndex(type_index)
 
     def save_stock(self):
-        self.validate_form()
-        if not self.save_btn.isEnabled():
-            QMessageBox.warning(self, "Validation Error", "Please fix errors.")
-            return
-
         product_id = self.product_combo.currentData()
-        quantity = int(self.qty_input.text().strip())
+        quantity_text = self.qty_input.text().strip()
         stock_type = self.type_combo.currentData()
 
-        try:
-            if self.stock_id:
-                updateProductStock(
-                    self.stock_id,
-                    product_id=product_id,
-                    quantity=quantity,
-                    type=stock_type,
-                )
-                QMessageBox.information(self, "Success", "Stock updated successfully.")
-            else:
-                addProductStock(product_id, quantity, type=stock_type)
-                QMessageBox.information(self, "Success", "Stock added successfully.")
+        success, message, errors = self.controller.save_stock(
+            stock_id=self.stock_id,
+            product_id=product_id,
+            quantity_text=quantity_text,
+            stock_type=stock_type,
+        )
 
+        if success:
+            QMessageBox.information(self, "Success", message)
             self.refresh_callback()
             self.close()
-        except ValueError as e:
-            QMessageBox.warning(self, "Error", str(e))
+        else:
+            if errors:
+                self.validate_form()
+            QMessageBox.warning(self, "Error", message)

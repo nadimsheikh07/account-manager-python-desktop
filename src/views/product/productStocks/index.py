@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
 )
 from functools import partial
 from config.theme import getGlobalStylesheet
-from src.services.productStock import getAllProductStocks, deleteProductStock
+from src.controllers.product_stock_controller import ProductStockController
 from src.components.heading import createTitle
 from src.views.product.productStocks.form import ProductStockForm
 from PySide6.QtCore import QTimer
@@ -22,6 +22,7 @@ class ProductStockList(QWidget):
         super().__init__()
         self.setMinimumSize(700, 400)
         self.setStyleSheet(getGlobalStylesheet())
+        self.controller = ProductStockController()
 
         self.init_ui()
         # Load data after the event loop starts
@@ -66,31 +67,19 @@ class ProductStockList(QWidget):
 
     def load_data(self):
         self.table.setSortingEnabled(False)
-        stocks = getAllProductStocks()
-        stocks = [self._orm_to_dict(s) for s in stocks]
         query = self.search_input.text().strip().lower()
-        if query:
-            stocks = [s for s in stocks if query in s["product"].lower()]
+        stocks = self.controller.get_stocks(query=query)
         self._populate_table(stocks)
         self.table.setSortingEnabled(True)
 
-    def _orm_to_dict(self, s):
-        return {
-            "id": s.id,
-            "product": s.product.name if s.product else "",
-            "type": s.type,
-            "quantity": s.quantity,
-            "last_updated": (
-                s.last_updated.strftime("%Y-%m-%d %H:%M:%S") if s.last_updated else ""
-            ),
-        }
+
 
     def _populate_table(self, stocks):
         self.table.setRowCount(len(stocks))
         for row, s in enumerate(stocks):
             self.table.setItem(row, 0, QTableWidgetItem(str(s["id"])))
             self.table.setItem(row, 1, QTableWidgetItem(s["product"]))
-            self.table.setItem(row, 2, QTableWidgetItem(s["type"].name))
+            self.table.setItem(row, 2, QTableWidgetItem(str(s["type"])))
             self.table.setItem(row, 3, QTableWidgetItem(str(s["quantity"])))
             self.table.setItem(row, 4, QTableWidgetItem(s["last_updated"]))
             self.table.setCellWidget(row, 5, self._create_action_buttons(s["id"]))
@@ -127,6 +116,9 @@ class ProductStockList(QWidget):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
-            deleteProductStock(stock_id)
-            QMessageBox.information(self, "Deleted", "Stock deleted successfully.")
-            self.load_data()
+            success, message = self.controller.delete_stock(stock_id)
+            if success:
+                QMessageBox.information(self, "Deleted", message)
+                self.load_data()
+            else:
+                QMessageBox.warning(self, "Error", message)
