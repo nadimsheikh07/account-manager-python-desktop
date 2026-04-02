@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
 )
 from PySide6.QtCore import Qt
-from src.services.category import addCategory, getCategory, updateCategory
+from src.controllers.category_controller import CategoryController
 from config.theme import getGlobalStylesheet
 from utils.formUtils import setError
 
@@ -19,6 +19,7 @@ class CategoryForm(QWidget):
         super().__init__()
         self.category_id = category_id
         self.refresh_callback = refresh_callback
+        self.controller = CategoryController()
 
         self.setWindowTitle("Category Form")
         self.setMinimumSize(400, 250)
@@ -94,7 +95,7 @@ class CategoryForm(QWidget):
         self.save_btn.setEnabled(valid)
 
     def load_category(self):
-        category = getCategory(self.category_id)
+        category = self.controller.get_category_by_id(self.category_id)
         if not category:
             QMessageBox.warning(self, "Error", "Category not found.")
             self.close()
@@ -103,22 +104,23 @@ class CategoryForm(QWidget):
         self.desc_input.setText(category.description or "")
 
     def save_category(self):
-        self.validate_form()
-        if not self.save_btn.isEnabled():
-            QMessageBox.warning(self, "Validation Error", "Please fix errors.")
-            return
         name = self.name_input.text().strip()
         description = self.desc_input.text().strip()
-        try:
-            if self.category_id:
-                updateCategory(self.category_id, name=name, description=description)
-                QMessageBox.information(
-                    self, "Success", "Category updated successfully."
-                )
-            else:
-                addCategory(name, description)
-                QMessageBox.information(self, "Success", "Category added successfully.")
-            self.refresh_callback()
-            self.close()
-        except ValueError as e:
-            QMessageBox.warning(self, "Error", str(e))
+
+        success, message, errors = self.controller.save_category(
+            self.category_id, name=name, description=description
+        )
+
+        if not success:
+            if errors:
+                for field, error in errors.items():
+                    if field == "name":
+                        setError(True, self.name_input)
+                        self.name_error.setText(error)
+                        self.name_error.setVisible(True)
+            QMessageBox.warning(self, "Error", message)
+            return
+
+        QMessageBox.information(self, "Success", message)
+        self.refresh_callback()
+        self.close()

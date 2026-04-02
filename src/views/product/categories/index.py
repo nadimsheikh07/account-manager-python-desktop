@@ -11,10 +11,8 @@ from PySide6.QtWidgets import (
 )
 from functools import partial
 from config.theme import getGlobalStylesheet
-from src.services.category import (
-    getAllCategories,
-    deleteCategory,
-)
+from config.theme import getGlobalStylesheet
+from src.controllers.category_controller import CategoryController
 from src.components.heading import createTitle
 from src.views.product.categories.form import CategoryForm
 
@@ -25,6 +23,7 @@ class CategoryList(QWidget):
         self.setMinimumSize(600, 400)
         self.setStyleSheet(getGlobalStylesheet())
 
+        self.controller = CategoryController()
         self.init_ui()
         self.load_data()
 
@@ -66,21 +65,10 @@ class CategoryList(QWidget):
 
     def load_data(self):
         self.table.setSortingEnabled(False)
-        categories = getAllCategories()
-        categories = [self._orm_to_dict(c) for c in categories]
         query = self.search_input.text().strip().lower()
-        if query:
-            categories = [
-                c
-                for c in categories
-                if query in c["name"].lower()
-                or query in (c["description"] or "").lower()
-            ]
+        categories = self.controller.get_categories(query)
         self._populate_table(categories)
         self.table.setSortingEnabled(True)
-
-    def _orm_to_dict(self, c):
-        return {"id": c.id, "name": c.name, "description": c.description}
 
     def _populate_table(self, categories):
         self.table.setRowCount(len(categories))
@@ -124,6 +112,9 @@ class CategoryList(QWidget):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
-            deleteCategory(category_id)
-            QMessageBox.information(self, "Deleted", "Category deleted successfully.")
-            self.load_data()
+            success, message = self.controller.delete_category(category_id)
+            if success:
+                QMessageBox.information(self, "Deleted", message)
+                self.load_data()
+            else:
+                QMessageBox.warning(self, "Error", message)
