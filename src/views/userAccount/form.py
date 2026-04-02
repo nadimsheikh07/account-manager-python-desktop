@@ -11,8 +11,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from config.theme import getGlobalStylesheet
+from src.controllers.user_account_controller import UserAccountController
 from src.services.user import getAllUsers
-from src.services.userAccount import addTransaction, getUserBalance
 from sqlalchemy.exc import SQLAlchemyError
 from utils.formUtils import setError  # reuse error styling helper
 
@@ -29,6 +29,7 @@ class UserAccountForm(QWidget):
         self.setWindowTitle("User Account Form")
         self.setMinimumSize(400, 350)
         self.setStyleSheet(getGlobalStylesheet())
+        self.controller = UserAccountController()
         self.init_ui()
 
     def init_ui(self):
@@ -159,16 +160,10 @@ class UserAccountForm(QWidget):
     # ==============================
     # Update balance
     # ==============================
-    def update_balance(self):
-        """Update current balance display for selected User"""
         user_id = self.user_dropdown.currentData()
         if user_id:
-            try:
-                balance = getUserBalance(user_id)
-                self.balance_label.setText(f"{balance:.2f}")
-            except SQLAlchemyError as e:
-                self.balance_label.setText("0.00")
-                print("Balance fetch error:", e)
+            balance = self.controller.get_user_balance(user_id)
+            self.balance_label.setText(f"{balance:.2f}")
         else:
             self.balance_label.setText("0.00")
         self.validate_form()
@@ -228,9 +223,14 @@ class UserAccountForm(QWidget):
         description = self.description_input.text().strip()
 
         try:
-            addTransaction(user_id, amount, type_, description)
-            QMessageBox.information(self, "Success", "Transaction added successfully.")
-            self.refresh_callback()
-            self.close()
-        except SQLAlchemyError as e:
-            QMessageBox.warning(self, "Database Error", f"Failed to save: {str(e)}")
+            success, message = self.controller.save_transaction(
+                user_id, amount, type_, description
+            )
+            if success:
+                QMessageBox.information(self, "Success", message)
+                self.refresh_callback()
+                self.close()
+            else:
+                QMessageBox.warning(self, "Error", message)
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to save: {str(e)}")

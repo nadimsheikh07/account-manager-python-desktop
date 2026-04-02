@@ -12,11 +12,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from functools import partial
 from datetime import datetime
-from config.theme import getGlobalStylesheet
-from src.services.user import getAllUsers
+from src.controllers.user_account_controller import UserAccountController
 from src.services.userAccount import (
-    getUserTransactions,
-    deleteTransaction,
     exportToExcel,
 )
 from src.views.userAccount.form import UserAccountForm
@@ -28,6 +25,7 @@ class UserAccountList(QWidget):
         super().__init__()
         self.setMinimumSize(700, 500)
         self.setStyleSheet(getGlobalStylesheet())
+        self.controller = UserAccountController()
 
         self.init_ui()
         self.load_data()
@@ -94,60 +92,23 @@ class UserAccountList(QWidget):
     # =========================
     def load_data(self):
         self.table.setSortingEnabled(False)
+        query = self.search_input.text()
+        all_rows_data = self.controller.get_account_data(query)
 
-        # Fetch all users (ORM objects) and convert to dict for filtering
-        all_users = [self._orm_to_dict(u) for u in getAllUsers()]
-        query = self.search_input.text().lower()
+        self.table.setRowCount(len(all_rows_data))
 
-        # Filter users
-        filtered = [
-            u
-            for u in all_users
-            if query in str(u.get("name", "")).lower()
-            or query in str(u.get("email", "")).lower()
-            or query in str(u.get("contact", "")).lower()
-            or query in str(u.get("address", "")).lower()
-            or query in str(u.get("date", "")).lower()
-        ]
+        for row_idx, data in enumerate(all_rows_data):
+            trx_id = data["trx_id"]
+            name = data["user_name"]
+            email = data["user_email"]
+            cr = data["cr"]
+            dr = data["dr"]
+            balance = data["balance"]
+            date = data["date"]
+            description = data["description"]
+            user_id = data["user_id"]
 
-        # Gather transactions for filtered users
-        all_rows = []
-        for user in filtered:
-            user_id = user["id"]
-            transactions = getUserTransactions(user_id)  # ORM tuples/list
-            # Sort by date
-            transactions.sort(key=lambda t: t.date)  # t.date is datetime
-
-            running_balance = 0.0
-            for trx in transactions:
-                trx_id = trx.id
-                trx_type = trx.type
-                amount = trx.amount
-                description = trx.description
-                date = trx.date.strftime("%Y-%m-%d %H:%M:%S") if trx.date else ""
-
-                running_balance += amount if trx_type == "CR" else -amount
-
-                all_rows.append(
-                    (
-                        trx_id,
-                        user["name"],
-                        user["email"],
-                        amount if trx_type == "CR" else 0.0,
-                        amount if trx_type == "DR" else 0.0,
-                        running_balance,
-                        date,
-                        description,
-                        user_id,
-                    )
-                )
-
-        self.table.setRowCount(len(all_rows))
-
-        for row_idx, row in enumerate(all_rows):
-            trx_id, name, email, cr, dr, balance, date, description, user_id = row
-
-            row_data = [
+            row_display = [
                 trx_id,
                 name,
                 email,
@@ -157,7 +118,7 @@ class UserAccountList(QWidget):
                 date,
             ]
 
-            for col_idx, value in enumerate(row_data):
+            for col_idx, value in enumerate(row_display):
                 item = QTableWidgetItem(str(value))
                 item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
                 self.table.setItem(row_idx, col_idx, item)
@@ -181,21 +142,6 @@ class UserAccountList(QWidget):
             self.table.setCellWidget(row_idx, 7, action_widget)
 
         self.table.setSortingEnabled(True)
-
-    # =========================
-    # Helper
-    # =========================
-    def _orm_to_dict(self, user):
-        """Convert ORM User to dict for table filtering"""
-        return {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "contact": user.contact,
-            "address": user.address,
-            "date": user.date.strftime("%Y-%m-%d %H:%M:%S") if user.date else "",
-            "type": user.type,
-        }
 
     # =========================
     # Actions
@@ -223,8 +169,9 @@ class UserAccountList(QWidget):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
-            deleteTransaction(trx_id)  # ORM-based
-            QMessageBox.information(
-                self, "Deleted", "Transaction deleted successfully."
-            )
-            self.load_data()
+            success, message = self.controller.delete_transaction(trx_id)
+            if success:
+                QMessageBox.information(self, "Success", message)
+                self.load_data()
+            else:
+                QMessageBox.warning(self, "Error", message)
