@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QApplication
 )
 from PySide6.QtCore import Qt, Signal
-from src.services.auth import authenticateUser
+from src.controllers.auth_controller import AuthController
 from config.theme import getGlobalStylesheet
 from utils.formUtils import setError
 
@@ -29,6 +29,7 @@ class LoginForm(QWidget):
             QWidget { background-color: #f4f6f9; }
         """
         )
+        self.controller = AuthController()
 
         self.init_ui()
 
@@ -162,7 +163,7 @@ class LoginForm(QWidget):
         QApplication.processEvents()
 
         # Authenticate
-        success = authenticateUser(username, password)
+        success = self.controller.login(username, password)
 
         # Restore button
         self.login_button.setText("Login")

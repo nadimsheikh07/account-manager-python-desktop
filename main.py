@@ -12,7 +12,7 @@ from src.views.user.index import UserList
 from src.views.purchaseOrder.index import PurchaseOrderList
 from src.views.saleOrder.index import SaleOrderList
 from src.views.userAccount.index import UserAccountList
-from src.services.auth import logout
+from src.controllers.auth_controller import AuthController
 from config.theme import getGlobalStylesheet
 from config.app import APP_NAME
 
@@ -23,6 +23,7 @@ class MainApp(QWidget):
         self.setWindowTitle(APP_NAME)
 
         self.setStyleSheet(getGlobalStylesheet())
+        self.auth_controller = AuthController()
 
         self.init_ui()
         self.showMaximized()
@@ -109,6 +110,6 @@ class MainApp(QWidget):
         self.show()
 
     def handle_logout(self):
-        logout()
+        self.auth_controller.logout()
         self.hide()
         self.launch_login()
