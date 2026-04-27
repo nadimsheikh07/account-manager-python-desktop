@@ -26,11 +26,13 @@ class ProductController:
                 for item in rows
                 if normalized_query in item["name"].lower()
                 or normalized_query in (item["sku"] or "").lower()
+                or normalized_query in (item["hsn_code"] or "").lower()
                 or normalized_query in str(item["price"])
+                or normalized_query in str(item["tax"])
             ]
         return rows
 
-    def validate_product_form(self, name, price_text, category_id):
+    def validate_product_form(self, name, price_text, category_id, tax_text="0"):
         errors = {}
 
         cleaned_name = (name or "").strip()
@@ -46,25 +48,40 @@ class ProductController:
         except ValueError:
             errors["price"] = "Invalid price"
 
+        cleaned_tax_text = (tax_text or "").strip()
+        parsed_tax = None
+        try:
+            parsed_tax = float(cleaned_tax_text or "0")
+            if parsed_tax < 0:
+                raise ValueError
+        except ValueError:
+            errors["tax"] = "Invalid tax"
+
         if not category_id:
             errors["category"] = "Category is required"
 
         payload = {
             "name": cleaned_name,
             "sku": None,
+            "hsn_code": None,
             "price": parsed_price,
+            "tax": parsed_tax,
             "category_id": category_id,
         }
         return len(errors) == 0, errors, payload
 
-    def save_product(self, product_id, name, sku, price_text, category_id):
+    def save_product(self, product_id, name, sku, hsn_code, price_text, tax_text, category_id):
         is_valid, errors, payload = self.validate_product_form(
-            name=name, price_text=price_text, category_id=category_id
+            name=name,
+            price_text=price_text,
+            category_id=category_id,
+            tax_text=tax_text,
         )
         if not is_valid:
             return False, "Please fix errors.", errors
 
         payload["sku"] = (sku or "").strip() or None
+        payload["hsn_code"] = (hsn_code or "").strip() or None
         try:
             if product_id:
                 updateProduct(product_id, **payload)
@@ -74,6 +91,8 @@ class ProductController:
                 payload["category_id"],
                 payload["price"],
                 payload["sku"],
+                hsn_code=payload["hsn_code"],
+                tax=payload["tax"],
             )
             return True, "Product added successfully.", {}
         except ValueError as exc:
@@ -88,6 +107,8 @@ class ProductController:
             "id": product.id,
             "name": product.name,
             "sku": product.sku,
+            "hsn_code": product.hsn_code,
             "price": product.price,
+            "tax": product.tax,
             "category": getattr(product.category, "name", "") or "",
         }

@@ -52,8 +52,8 @@ class CategoryList(QWidget):
         layout.addLayout(top_layout)
 
         self.table = QTableWidget()
-        self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(["ID", "Name", "Description", "Actions"])
+        self.table.setColumnCount(5)
+        self.table.setHorizontalHeaderLabels(["ID", "Name", "Description", "Tax (%)", "Actions"])
         self.table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
         )
@@ -75,7 +75,8 @@ class CategoryList(QWidget):
             self.table.setItem(row, 0, QTableWidgetItem(str(cat["id"])))
             self.table.setItem(row, 1, QTableWidgetItem(cat["name"]))
             self.table.setItem(row, 2, QTableWidgetItem(cat["description"] or ""))
-            self.table.setCellWidget(row, 3, self._create_action_buttons(cat["id"]))
+            self.table.setItem(row, 3, QTableWidgetItem(f"{cat['tax']:.2f}"))
+            self.table.setCellWidget(row, 4, self._create_action_buttons(cat["id"]))
 
     def _create_action_buttons(self, category_id):
         edit_btn = QPushButton("Edit")

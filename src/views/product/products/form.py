@@ -50,20 +50,33 @@ class ProductForm(QWidget):
         grid.addWidget(self.sku_input, 2, 1)
         grid.addWidget(self.sku_error, 3, 1)
 
+        # HSN Code
+        grid.addWidget(QLabel("HSN Code:"), 4, 0)
+        self.hsn_code_input, self.hsn_code_error = self.create_input()
+        grid.addWidget(self.hsn_code_input, 4, 1)
+        grid.addWidget(self.hsn_code_error, 5, 1)
+
         # Price
-        grid.addWidget(QLabel("Price:"), 4, 0)
+        grid.addWidget(QLabel("Price:"), 6, 0)
         self.price_input, self.price_error = self.create_input()
-        grid.addWidget(self.price_input, 4, 1)
-        grid.addWidget(self.price_error, 5, 1)
+        grid.addWidget(self.price_input, 6, 1)
+        grid.addWidget(self.price_error, 7, 1)
+
+        # Tax
+        grid.addWidget(QLabel("Tax (%):"), 8, 0)
+        self.tax_input, self.tax_error = self.create_input()
+        self.tax_input.setText("0")
+        grid.addWidget(self.tax_input, 8, 1)
+        grid.addWidget(self.tax_error, 9, 1)
 
         # Category
-        grid.addWidget(QLabel("Category:"), 6, 0)
+        grid.addWidget(QLabel("Category:"), 10, 0)
         self.category_combo = QComboBox()
         self.categories = self.controller.get_categories()
         self.category_combo.addItem("Select Category", None)
         for c in self.categories:
             self.category_combo.addItem(c.name, c.id)
-        grid.addWidget(self.category_combo, 6, 1)
+        grid.addWidget(self.category_combo, 10, 1)
 
         layout.addLayout(grid)
 
@@ -80,7 +93,9 @@ class ProductForm(QWidget):
         for input_field, error_label in [
             (self.name_input, self.name_error),
             (self.sku_input, self.sku_error),
+            (self.hsn_code_input, self.hsn_code_error),
             (self.price_input, self.price_error),
+            (self.tax_input, self.tax_error),
         ]:
             input_field.textChanged.connect(self.validate_form)
             input_field.textChanged.connect(
@@ -107,6 +122,7 @@ class ProductForm(QWidget):
             name=self.name_input.text(),
             price_text=self.price_input.text(),
             category_id=self.category_combo.currentData(),
+            tax_text=self.tax_input.text(),
         )
 
         if "name" in errors:
@@ -123,6 +139,13 @@ class ProductForm(QWidget):
         else:
             self.clear_error(self.price_input, self.price_error)
 
+        if "tax" in errors:
+            setError(True, self.tax_input)
+            self.tax_error.setText(errors["tax"])
+            self.tax_error.setVisible(True)
+        else:
+            self.clear_error(self.tax_input, self.tax_error)
+
         self.save_btn.setEnabled(is_valid)
 
     def load_product(self):
@@ -133,7 +156,9 @@ class ProductForm(QWidget):
             return
         self.name_input.setText(product.name or "")
         self.sku_input.setText(product.sku or "")
+        self.hsn_code_input.setText(product.hsn_code or "")
         self.price_input.setText(str(product.price))
+        self.tax_input.setText(str(product.tax if product.tax is not None else 0))
         index = self.category_combo.findData(product.category_id)
         if index >= 0:
             self.category_combo.setCurrentIndex(index)
@@ -144,7 +169,9 @@ class ProductForm(QWidget):
             product_id=self.product_id,
             name=self.name_input.text(),
             sku=self.sku_input.text(),
+            hsn_code=self.hsn_code_input.text(),
             price_text=self.price_input.text(),
+            tax_text=self.tax_input.text(),
             category_id=self.category_combo.currentData(),
         )
 

@@ -3,16 +3,19 @@ from src.models.product import Category
 from sqlalchemy.exc import IntegrityError
 
 
-def addCategory(name, description=None, parent_id=None):
+def addCategory(name, description=None, parent_id=None, tax=0.0):
     """Add a new category"""
     if not name or not name.strip():
         raise ValueError("Category name is required")
+    if tax is None or tax < 0:
+        raise ValueError("Tax must be a non-negative number")
 
     with SessionLocal() as db:
         category = Category(
             name=name.strip(),
             description=description.strip() if description else None,
             parent_id=parent_id,
+            tax=tax,
         )
         db.add(category)
         try:
@@ -36,7 +39,7 @@ def getAllCategories():
         return db.query(Category).all()
 
 
-def updateCategory(category_id, name=None, description=None, parent_id=None):
+def updateCategory(category_id, name=None, description=None, parent_id=None, tax=None):
     """Update category details"""
     if not category_id:
         raise ValueError("Category ID is required")
@@ -52,6 +55,10 @@ def updateCategory(category_id, name=None, description=None, parent_id=None):
             category.description = description.strip() if description else None
         if parent_id is not None:
             category.parent_id = parent_id
+        if tax is not None:
+            if tax < 0:
+                raise ValueError("Tax must be a non-negative number")
+            category.tax = tax
 
         try:
             db.commit()

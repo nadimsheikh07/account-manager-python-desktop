@@ -4,12 +4,16 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 
-def addProduct(name, category_id, price, sku=None, description=None):
+def addProduct(
+    name, category_id, price, sku=None, description=None, hsn_code=None, tax=0.0
+):
     """Add a new product"""
     if not name or not name.strip():
         raise ValueError("Product name is required")
     if price is None or price < 0:
         raise ValueError("Price must be a positive number")
+    if tax is None or tax < 0:
+        raise ValueError("Tax must be a non-negative number")
 
     with SessionLocal() as db:
         product = Product(
@@ -17,6 +21,8 @@ def addProduct(name, category_id, price, sku=None, description=None):
             category_id=category_id,
             price=price,
             sku=sku.strip() if sku else None,
+            hsn_code=hsn_code.strip() if hsn_code else None,
+            tax=tax,
             description=description.strip() if description else None,
         )
         db.add(product)
@@ -46,7 +52,14 @@ def getAllProducts(category_id=None):
 
 
 def updateProduct(
-    product_id, name=None, category_id=None, price=None, sku=None, description=None
+    product_id,
+    name=None,
+    category_id=None,
+    price=None,
+    sku=None,
+    description=None,
+    hsn_code=None,
+    tax=None,
 ):
     """Update product details"""
     if not product_id:
@@ -67,6 +80,12 @@ def updateProduct(
             product.price = price
         if sku is not None:
             product.sku = sku.strip() if sku else None
+        if hsn_code is not None:
+            product.hsn_code = hsn_code.strip() if hsn_code else None
+        if tax is not None:
+            if tax < 0:
+                raise ValueError("Tax must be non-negative")
+            product.tax = tax
         if description is not None:
             product.description = description.strip() if description else None
 

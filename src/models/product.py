@@ -22,6 +22,7 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"))
     name = Column(String, unique=True, nullable=False)
+    tax = Column(Float, nullable=False, default=0.0)
     description = Column(Text)
     date = Column(DateTime, server_default=func.now())
 
@@ -38,6 +39,8 @@ class Product(Base):
 
     name = Column(String, nullable=False)
     sku = Column(String, unique=True, index=True)
+    hsn_code = Column(String)
+    tax = Column(Float, nullable=False, default=0.0)
     price = Column(Float, nullable=False)
     description = Column(Text)
     date = Column(DateTime, server_default=func.now())

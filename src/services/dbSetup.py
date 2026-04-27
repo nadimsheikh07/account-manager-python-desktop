@@ -1,7 +1,35 @@
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import inspect, text
 from config.db import Base, engine, SessionLocal
 import src.models
 import bcrypt
+
+
+def _ensure_inventory_columns():
+    """Add missing inventory columns for older SQLite databases."""
+    inspector = inspect(engine)
+
+    category_columns = {col["name"] for col in inspector.get_columns("categories")}
+    product_columns = {col["name"] for col in inspector.get_columns("products")}
+
+    statements = []
+    if "tax" not in category_columns:
+        statements.append(
+            "ALTER TABLE categories ADD COLUMN tax FLOAT NOT NULL DEFAULT 0.0"
+        )
+    if "hsn_code" not in product_columns:
+        statements.append("ALTER TABLE products ADD COLUMN hsn_code VARCHAR")
+    if "tax" not in product_columns:
+        statements.append(
+            "ALTER TABLE products ADD COLUMN tax FLOAT NOT NULL DEFAULT 0.0"
+        )
+
+    if not statements:
+        return
+
+    with engine.begin() as connection:
+        for statement in statements:
+            connection.execute(text(statement))
 
 
 def init_db():
@@ -11,6 +39,7 @@ def init_db():
 
     # 1️⃣ Create all tables
     Base.metadata.create_all(bind=engine)
+    _ensure_inventory_columns()
 
     # 2️⃣ Default admin credentials
     default_name = "Nadim Sheikh"

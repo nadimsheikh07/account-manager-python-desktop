@@ -49,6 +49,13 @@ class CategoryForm(QWidget):
         grid.addWidget(self.desc_input, 2, 1)
         grid.addWidget(self.desc_error, 3, 1)
 
+        # Tax
+        grid.addWidget(QLabel("Tax (%):"), 4, 0)
+        self.tax_input, self.tax_error = self.create_input()
+        self.tax_input.setText("0")
+        grid.addWidget(self.tax_input, 4, 1)
+        grid.addWidget(self.tax_error, 5, 1)
+
         layout.addLayout(grid)
 
         self.save_btn = QPushButton("Save Category")
@@ -64,6 +71,7 @@ class CategoryForm(QWidget):
         for input_field, error_label in [
             (self.name_input, self.name_error),
             (self.desc_input, self.desc_error),
+            (self.tax_input, self.tax_error),
         ]:
             input_field.textChanged.connect(self.validate_form)
             input_field.textChanged.connect(
@@ -85,14 +93,27 @@ class CategoryForm(QWidget):
         error_label.setVisible(False)
 
     def validate_form(self):
-        valid = True
-        name = self.name_input.text().strip()
-        if not name:
+        is_valid, errors, _ = self.controller.validate_category_form(
+            name=self.name_input.text(),
+            description=self.desc_input.text(),
+            tax_text=self.tax_input.text(),
+        )
+
+        if "name" in errors:
             setError(True, self.name_input)
-            self.name_error.setText("Name is required")
+            self.name_error.setText(errors["name"])
             self.name_error.setVisible(True)
-            valid = False
-        self.save_btn.setEnabled(valid)
+        else:
+            self.clear_error(self.name_input, self.name_error)
+
+        if "tax" in errors:
+            setError(True, self.tax_input)
+            self.tax_error.setText(errors["tax"])
+            self.tax_error.setVisible(True)
+        else:
+            self.clear_error(self.tax_input, self.tax_error)
+
+        self.save_btn.setEnabled(is_valid)
 
     def load_category(self):
         category = self.controller.get_category_by_id(self.category_id)
@@ -102,13 +123,17 @@ class CategoryForm(QWidget):
             return
         self.name_input.setText(category.name or "")
         self.desc_input.setText(category.description or "")
+        self.tax_input.setText(str(category.tax if category.tax is not None else 0))
 
     def save_category(self):
         name = self.name_input.text().strip()
         description = self.desc_input.text().strip()
 
         success, message, errors = self.controller.save_category(
-            self.category_id, name=name, description=description
+            self.category_id,
+            name=name,
+            description=description,
+            tax_text=self.tax_input.text(),
         )
 
         if not success:
@@ -118,6 +143,10 @@ class CategoryForm(QWidget):
                         setError(True, self.name_input)
                         self.name_error.setText(error)
                         self.name_error.setVisible(True)
+                    if field == "tax":
+                        setError(True, self.tax_input)
+                        self.tax_error.setText(error)
+                        self.tax_error.setVisible(True)
             QMessageBox.warning(self, "Error", message)
             return
 

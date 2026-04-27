@@ -53,9 +53,9 @@ class ProductList(QWidget):
         layout.addLayout(top_layout)
 
         self.table = QTableWidget()
-        self.table.setColumnCount(6)
+        self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels(
-            ["ID", "Name", "SKU", "Price", "Category", "Actions"]
+            ["ID", "Name", "SKU", "HSN", "Price", "Tax (%)", "Category", "Actions"]
         )
         self.table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
@@ -77,9 +77,11 @@ class ProductList(QWidget):
             self.table.setItem(row, 0, QTableWidgetItem(str(prod["id"])))
             self.table.setItem(row, 1, QTableWidgetItem(prod["name"]))
             self.table.setItem(row, 2, QTableWidgetItem(prod["sku"] or ""))
-            self.table.setItem(row, 3, QTableWidgetItem(f"{prod['price']:.2f}"))
-            self.table.setItem(row, 4, QTableWidgetItem(prod["category"]))
-            self.table.setCellWidget(row, 5, self._create_action_buttons(prod["id"]))
+            self.table.setItem(row, 3, QTableWidgetItem(prod["hsn_code"] or ""))
+            self.table.setItem(row, 4, QTableWidgetItem(f"{prod['price']:.2f}"))
+            self.table.setItem(row, 5, QTableWidgetItem(f"{prod['tax']:.2f}"))
+            self.table.setItem(row, 6, QTableWidgetItem(prod["category"]))
+            self.table.setCellWidget(row, 7, self._create_action_buttons(prod["id"]))
 
     def _create_action_buttons(self, product_id):
         edit_btn = QPushButton("Edit")
