@@ -37,7 +37,7 @@ class ProductList(QWidget):
         top_layout = QHBoxLayout()
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText(
-            "Search products by name, SKU, or price..."
+            "Search products by name, SKU, price, or cost..."
         )
         self.search_input.textChanged.connect(self.load_data)
         self.add_btn = QPushButton("Add Product")
@@ -53,9 +53,19 @@ class ProductList(QWidget):
         layout.addLayout(top_layout)
 
         self.table = QTableWidget()
-        self.table.setColumnCount(8)
+        self.table.setColumnCount(9)
         self.table.setHorizontalHeaderLabels(
-            ["ID", "Name", "SKU", "HSN", "Price", "Tax (%)", "Category", "Actions"]
+            [
+                "ID",
+                "Name",
+                "SKU",
+                "HSN",
+                "Price",
+                "Cost",
+                "Tax (%)",
+                "Category",
+                "Actions",
+            ]
         )
         self.table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
@@ -79,9 +89,10 @@ class ProductList(QWidget):
             self.table.setItem(row, 2, QTableWidgetItem(prod["sku"] or ""))
             self.table.setItem(row, 3, QTableWidgetItem(prod["hsn_code"] or ""))
             self.table.setItem(row, 4, QTableWidgetItem(f"{prod['price']:.2f}"))
-            self.table.setItem(row, 5, QTableWidgetItem(f"{prod['tax']:.2f}"))
-            self.table.setItem(row, 6, QTableWidgetItem(prod["category"]))
-            self.table.setCellWidget(row, 7, self._create_action_buttons(prod["id"]))
+            self.table.setItem(row, 5, QTableWidgetItem(f"{prod['cost']:.2f}"))
+            self.table.setItem(row, 6, QTableWidgetItem(f"{prod['tax']:.2f}"))
+            self.table.setItem(row, 7, QTableWidgetItem(prod["category"]))
+            self.table.setCellWidget(row, 8, self._create_action_buttons(prod["id"]))
 
     def _create_action_buttons(self, product_id):
         edit_btn = QPushButton("Edit")

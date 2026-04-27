@@ -28,11 +28,14 @@ class ProductController:
                 or normalized_query in (item["sku"] or "").lower()
                 or normalized_query in (item["hsn_code"] or "").lower()
                 or normalized_query in str(item["price"])
+                or normalized_query in str(item["cost"])
                 or normalized_query in str(item["tax"])
             ]
         return rows
 
-    def validate_product_form(self, name, price_text, category_id, tax_text="0"):
+    def validate_product_form(
+        self, name, price_text, cost_text, category_id, tax_text="0"
+    ):
         errors = {}
 
         cleaned_name = (name or "").strip()
@@ -47,6 +50,15 @@ class ProductController:
                 raise ValueError
         except ValueError:
             errors["price"] = "Invalid price"
+
+        cleaned_cost_text = (cost_text or "").strip()
+        parsed_cost = None
+        try:
+            parsed_cost = float(cleaned_cost_text or "0")
+            if parsed_cost < 0:
+                raise ValueError
+        except ValueError:
+            errors["cost"] = "Invalid cost"
 
         cleaned_tax_text = (tax_text or "").strip()
         parsed_tax = None
@@ -65,15 +77,19 @@ class ProductController:
             "sku": None,
             "hsn_code": None,
             "price": parsed_price,
+            "cost": parsed_cost,
             "tax": parsed_tax,
             "category_id": category_id,
         }
         return len(errors) == 0, errors, payload
 
-    def save_product(self, product_id, name, sku, hsn_code, price_text, tax_text, category_id):
+    def save_product(
+        self, product_id, name, sku, hsn_code, price_text, cost_text, tax_text, category_id
+    ):
         is_valid, errors, payload = self.validate_product_form(
             name=name,
             price_text=price_text,
+            cost_text=cost_text,
             category_id=category_id,
             tax_text=tax_text,
         )
@@ -90,6 +106,7 @@ class ProductController:
                 payload["name"],
                 payload["category_id"],
                 payload["price"],
+                payload["cost"],
                 payload["sku"],
                 hsn_code=payload["hsn_code"],
                 tax=payload["tax"],
@@ -109,6 +126,7 @@ class ProductController:
             "sku": product.sku,
             "hsn_code": product.hsn_code,
             "price": product.price,
+            "cost": product.cost,
             "tax": product.tax,
             "category": getattr(product.category, "name", "") or "",
         }

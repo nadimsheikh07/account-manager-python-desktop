@@ -23,6 +23,10 @@ def _ensure_inventory_columns():
         statements.append(
             "ALTER TABLE products ADD COLUMN tax FLOAT NOT NULL DEFAULT 0.0"
         )
+    if "cost" not in product_columns:
+        statements.append(
+            "ALTER TABLE products ADD COLUMN cost FLOAT NOT NULL DEFAULT 0.0"
+        )
 
     if not statements:
         return

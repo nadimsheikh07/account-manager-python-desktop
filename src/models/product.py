@@ -8,7 +8,7 @@ from sqlalchemy import (
     Float,
     CheckConstraint,
     Index,
-    Enum
+    Enum,
 )
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -41,12 +41,14 @@ class Product(Base):
     sku = Column(String, unique=True, index=True)
     hsn_code = Column(String)
     tax = Column(Float, nullable=False, default=0.0)
-    price = Column(Float, nullable=False)
+    price = Column(Float, nullable=False, default=0.0)
+    cost = Column(Float, nullable=False, default=0.0)
     description = Column(Text)
     date = Column(DateTime, server_default=func.now())
 
     __table_args__ = (
         CheckConstraint("price >= 0", name="check_product_price"),
+        CheckConstraint("cost >= 0", name="check_product_cost"),
         Index("idx_products_category_id", "category_id"),
     )
 

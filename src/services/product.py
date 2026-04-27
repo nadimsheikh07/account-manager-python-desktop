@@ -5,13 +5,22 @@ from sqlalchemy.orm import selectinload
 
 
 def addProduct(
-    name, category_id, price, sku=None, description=None, hsn_code=None, tax=0.0
+    name,
+    category_id,
+    price,
+    cost=0.0,
+    sku=None,
+    description=None,
+    hsn_code=None,
+    tax=0.0,
 ):
     """Add a new product"""
     if not name or not name.strip():
         raise ValueError("Product name is required")
     if price is None or price < 0:
         raise ValueError("Price must be a positive number")
+    if cost is None or cost < 0:
+        raise ValueError("Cost must be a non-negative number")
     if tax is None or tax < 0:
         raise ValueError("Tax must be a non-negative number")
 
@@ -20,6 +29,7 @@ def addProduct(
             name=name.strip(),
             category_id=category_id,
             price=price,
+            cost=cost,
             sku=sku.strip() if sku else None,
             hsn_code=hsn_code.strip() if hsn_code else None,
             tax=tax,
@@ -56,6 +66,7 @@ def updateProduct(
     name=None,
     category_id=None,
     price=None,
+    cost=None,
     sku=None,
     description=None,
     hsn_code=None,
@@ -78,6 +89,10 @@ def updateProduct(
             if price < 0:
                 raise ValueError("Price must be non-negative")
             product.price = price
+        if cost is not None:
+            if cost < 0:
+                raise ValueError("Cost must be non-negative")
+            product.cost = cost
         if sku is not None:
             product.sku = sku.strip() if sku else None
         if hsn_code is not None:
