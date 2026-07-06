@@ -25,6 +25,7 @@ class SaleOrderForm(QWidget):
         self.controller = SaleController()
 
         self.products = getAllProducts()
+        self.product_map = {p.id: p for p in self.products}
         self.users = getAllUsers()
 
         self.items = []
@@ -88,6 +89,9 @@ class SaleOrderForm(QWidget):
             }
         )
 
+        product_combo.currentIndexChanged.connect(
+            lambda _: self.on_product_selected(product_combo, price_input)
+        )
         qty_input.textChanged.connect(self.calculate_total)
         price_input.textChanged.connect(self.calculate_total)
 
@@ -143,3 +147,18 @@ class SaleOrderForm(QWidget):
                 QMessageBox.warning(self, "Error", message)
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to save: {str(e)}")
+
+    def on_product_selected(self, product_combo, price_input):
+        product_id = product_combo.currentData()
+        if not product_id:
+            price_input.clear()
+            self.calculate_total()
+            return
+
+        product = self.product_map.get(product_id)
+        if product is not None:
+            price_input.setText(str(product.price))
+        else:
+            price_input.clear()
+
+        self.calculate_total()
