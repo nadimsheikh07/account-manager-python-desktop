@@ -33,7 +33,7 @@ class PDFExporter:
         self.usable_width = self.page_width - (self.margin * 2)
         self.y = self.margin
 
-        self.row_height = 70
+        self.row_height = 80
 
     def draw_title(self, title, font_size=16):
         if not title:
@@ -46,12 +46,12 @@ class PDFExporter:
     def draw_invoice_header(self, invoice_id, invoice_date):
         self.painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         self.painter.drawText(self.margin, self.y, f"Invoice #: {invoice_id}")
-        self.y += 30
+        self.y += 50
         self.painter.setFont(QFont("Arial", 10))
         self.painter.drawText(self.margin, self.y, f"Date: {invoice_date}")
-        self.y += 40
+        self.y += 50
         self.painter.drawLine(self.margin, self.y, self.page_width - self.margin, self.y)
-        self.y += 30
+        self.y += 50
 
     def draw_user_info(self, user_info: dict):
         if not user_info:
