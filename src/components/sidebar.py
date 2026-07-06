@@ -14,6 +14,7 @@ class Sidebar(QFrame):
     inventory_clicked = Signal()
     purchase_orders_clicked = Signal()
     sale_orders_clicked = Signal()  # 🔥 NEW
+    profit_report_clicked = Signal()
     logout_clicked = Signal()
     toggle_clicked = Signal()
 
@@ -57,6 +58,11 @@ class Sidebar(QFrame):
                 "Sale Orders",  # 🔥 NEW MENU
                 QStyle.StandardPixmap.SP_FileDialogListView,
                 self.sale_orders_clicked.emit,
+            ),
+            (
+                "Profit Report",
+                QStyle.StandardPixmap.SP_DriveFDIcon,
+                self.profit_report_clicked.emit,
             ),
             (
                 "Logout",

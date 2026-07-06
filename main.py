@@ -41,6 +41,7 @@ class MainApp(QWidget):
         self.sidebar.inventory_clicked.connect(self.show_inventory)
         self.sidebar.purchase_orders_clicked.connect(self.show_purchase_orders)
         self.sidebar.sale_orders_clicked.connect(self.show_sale_orders)
+        self.sidebar.profit_report_clicked.connect(self.show_profit_report)
         self.sidebar.logout_clicked.connect(self.handle_logout)
 
         # ================= Content =================
@@ -98,6 +99,14 @@ class MainApp(QWidget):
         self.sidebar.set_active("Sale Orders")
 
         self.content_layout.addWidget(SaleOrderList())    
+
+    def show_profit_report(self):
+        self.clear_content()
+        self.sidebar.set_active("Profit Report")
+
+        from src.views.reports.profit import ProfitReport
+
+        self.content_layout.addWidget(ProfitReport())
     # ==========================================
     # Login Handling
     # ==========================================
