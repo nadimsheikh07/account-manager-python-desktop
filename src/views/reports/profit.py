@@ -46,8 +46,10 @@ class ProfitReport(QWidget):
         refresh_btn.clicked.connect(self.refresh)
 
         export_excel_btn = QPushButton("Export Excel")
+        export_excel_btn.setProperty("class", "secondary")
         export_excel_btn.clicked.connect(self.export_to_excel)
         export_pdf_btn = QPushButton("Export PDF")
+        export_pdf_btn.setProperty("class", "secondary")
         export_pdf_btn.clicked.connect(self.export_to_pdf)
 
         controls.addWidget(QLabel("Start:"))
