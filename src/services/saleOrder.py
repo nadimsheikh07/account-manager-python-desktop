@@ -2,7 +2,7 @@ from config.db import SessionLocal
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 from src.models.sale import SaleOrder, SaleOrderProduct
-from src.models.product import Product
+from src.models.product import Product, ProductStock, StockType
 
 
 def createSaleOrder(user_id, items):
@@ -45,6 +45,29 @@ def createSaleOrder(user_id, items):
                     price=item["price"],
                 )
                 db.add(order_product)
+
+                # Update product stock: decrease on sale
+                product = db.get(Product, item["product_id"])
+                if not product:
+                    raise IntegrityError(None, None, None)
+
+                stock = product.stock
+                # treat missing stock as zero
+                current_qty = stock.quantity if stock is not None else 0
+                if current_qty < item["quantity"]:
+                    raise ValueError(f"Insufficient stock for product {product.id}")
+
+                if stock is None:
+                    # create a stock record with zero then subtract
+                    stock = ProductStock(
+                        product_id=product.id,
+                        quantity=0,
+                        type=StockType.OUT,
+                    )
+                    db.add(stock)
+
+                stock.quantity = current_qty - item["quantity"]
+                stock.type = StockType.OUT
 
             db.commit()
             db.refresh(order)

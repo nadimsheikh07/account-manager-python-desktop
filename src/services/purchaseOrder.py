@@ -2,6 +2,7 @@ from config.db import SessionLocal
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 from src.models.purchase import PurchaseOrder, PurchaseOrderProduct
+from src.models.product import Product, ProductStock, StockType
 
 
 def createPurchaseOrder(supplier_id, items):
@@ -47,6 +48,23 @@ def createPurchaseOrder(supplier_id, items):
                     price=item["price"],
                 )
                 db.add(order_product)
+
+                # Update product stock: increase on purchase
+                product = db.get(Product, item["product_id"])
+                if not product:
+                    raise IntegrityError(None, None, None)
+
+                stock = product.stock
+                if stock is None:
+                    stock = ProductStock(
+                        product_id=product.id,
+                        quantity=item["quantity"],
+                        type=StockType.IN,
+                    )
+                    db.add(stock)
+                else:
+                    stock.quantity = (stock.quantity or 0) + item["quantity"]
+                    stock.type = StockType.IN
 
             db.commit()
             db.refresh(order)
