@@ -6,10 +6,12 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QHeaderView,
     QMessageBox,
+    QPushButton,
 )
 from config.theme import getGlobalStylesheet
 from src.components.heading import createTitle
 from src.controllers.purchase_controller import PurchaseController
+from utils.pdfUtils import PDFExporter
 
 
 class PurchaseOrderDetail(QWidget):
@@ -33,6 +35,11 @@ class PurchaseOrderDetail(QWidget):
 
         self.summary_label = QLabel("")
         layout.addWidget(self.summary_label)
+
+        self.export_btn = QPushButton("Export Invoice")
+        self.export_btn.setProperty("class", "primary")
+        self.export_btn.clicked.connect(self.export_invoice)
+        layout.addWidget(self.export_btn)
 
         self.table = QTableWidget()
         self.table.setColumnCount(5)
@@ -70,3 +77,58 @@ class PurchaseOrderDetail(QWidget):
             self.table.setItem(row, 2, QTableWidgetItem(f"{item.price:.2f}"))
             self.table.setItem(row, 3, QTableWidgetItem(f"{subtotal:.2f}"))
             self.table.setItem(row, 4, QTableWidgetItem(str(item.product_id)))
+
+    def export_invoice(self):
+        order = self.controller.get_order_by_id(self.order_id)
+        if not order:
+            QMessageBox.warning(self, "Error", "Purchase order not found.")
+            return
+
+        supplier_name = order.supplier.name if order.supplier else "Unknown"
+        supplier_email = getattr(order.supplier, "email", "")
+        supplier_contact = getattr(order.supplier, "contact", "")
+        order_date = order.date.strftime("%Y-%m-%d %H:%M:%S") if order.date else "-"
+
+        try:
+            pdf = PDFExporter(
+                self,
+                filename=f"purchase_invoice_{order.id}.pdf",
+            )
+            pdf.draw_title("Purchase Invoice")
+            pdf.draw_invoice_header(order.id, order_date)
+            pdf.draw_user_info(
+                {
+                    "Supplier": supplier_name,
+                    "Email": supplier_email,
+                    "Contact": supplier_contact,
+                }
+            )
+
+            table_rows = []
+            for item in order.products or []:
+                product_name = item.product.name if item.product else "Unknown Product"
+                subtotal = item.quantity * item.price
+                table_rows.append(
+                    [
+                        product_name,
+                        item.quantity,
+                        f"{item.price:.2f}",
+                        f"{subtotal:.2f}",
+                    ]
+                )
+
+            columns = ["Product", "Qty", "Unit Price", "Subtotal"]
+            col_widths = [pdf.usable_width * 0.40, pdf.usable_width * 0.20, pdf.usable_width * 0.20, pdf.usable_width * 0.20]
+            pdf.draw_table(columns, table_rows, col_widths)
+            pdf.draw_summary({"Total Amount": order.total_amount})
+            pdf.finish()
+
+            QMessageBox.information(
+                self,
+                "Exported",
+                f"Purchase invoice exported successfully to:\n{pdf.file_path}",
+            )
+        except ValueError:
+            pass
+        except Exception as e:
+            QMessageBox.warning(self, "Export Error", f"Failed to export invoice: {str(e)}")

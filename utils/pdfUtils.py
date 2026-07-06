@@ -43,6 +43,16 @@ class PDFExporter:
         self.y += 80
         self.painter.setFont(QFont("Arial", 10))
 
+    def draw_invoice_header(self, invoice_id, invoice_date):
+        self.painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.painter.drawText(self.margin, self.y, f"Invoice #: {invoice_id}")
+        self.y += 30
+        self.painter.setFont(QFont("Arial", 10))
+        self.painter.drawText(self.margin, self.y, f"Date: {invoice_date}")
+        self.y += 40
+        self.painter.drawLine(self.margin, self.y, self.page_width - self.margin, self.y)
+        self.y += 30
+
     def draw_user_info(self, user_info: dict):
         if not user_info:
             user_info = {"Info": "No user information provided"}  # default fallback
