@@ -8,3 +8,8 @@ pip freeze > requirements.txt
 ```bash
 python -m pip install -r requirements.txt
 ```
+
+## make migrations
+```bash
+python -m alembic revision --autogenerate -m "Initial migration"
+```

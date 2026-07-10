@@ -1,93 +1,65 @@
+from alembic import command
+from alembic.config import Config
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import inspect, text
-from config.db import Base, engine, SessionLocal
+from config.db import SessionLocal
 import src.models
 import bcrypt
+from pathlib import Path
 
 
-def _ensure_inventory_columns():
-    """Add missing inventory columns for older SQLite databases."""
-    inspector = inspect(engine)
+def run_migrations():
+    """Run all pending Alembic migrations."""
+    # Locate the repository root (two levels up from src/services)
+    repo_root = Path(__file__).resolve().parents[2]
+    alembic_cfg = Config(str(repo_root / "alembic.ini"))
 
-    category_columns = {col["name"] for col in inspector.get_columns("categories")}
-    product_columns = {col["name"] for col in inspector.get_columns("products")}
-    purchase_item_columns = {
-        col["name"] for col in inspector.get_columns("purchase_order_products")
-    }
-    sale_item_columns = {col["name"] for col in inspector.get_columns("sale_order_products")}
-
-    statements = []
-    if "tax" not in category_columns:
-        statements.append(
-            "ALTER TABLE categories ADD COLUMN tax FLOAT NOT NULL DEFAULT 0.0"
-        )
-    if "hsn_code" not in product_columns:
-        statements.append("ALTER TABLE products ADD COLUMN hsn_code VARCHAR")
-    if "tax" not in product_columns:
-        statements.append(
-            "ALTER TABLE products ADD COLUMN tax FLOAT NOT NULL DEFAULT 0.0"
-        )
-    if "cost" not in product_columns:
-        statements.append(
-            "ALTER TABLE products ADD COLUMN cost FLOAT NOT NULL DEFAULT 0.0"
-        )
-    if "tax" not in purchase_item_columns:
-        statements.append(
-            "ALTER TABLE purchase_order_products ADD COLUMN tax FLOAT NOT NULL DEFAULT 0.0"
-        )
-    if "tax" not in sale_item_columns:
-        statements.append(
-            "ALTER TABLE sale_order_products ADD COLUMN tax FLOAT NOT NULL DEFAULT 0.0"
-        )
-
-    if not statements:
-        return
-
-    with engine.begin() as connection:
-        for statement in statements:
-            connection.execute(text(statement))
+    command.upgrade(alembic_cfg, "head")
 
 
 def init_db():
-    """
-    Initialize database tables and create default admin user.
-    """
+    """Run migrations and create default admin user."""
 
-    # 1️⃣ Create all tables
-    Base.metadata.create_all(bind=engine)
-    _ensure_inventory_columns()
-
-    # 2️⃣ Default admin credentials
-    default_name = "Nadim Sheikh"
-    default_username = "admin"
-    default_email = "nadim.sheikh.07@gmail.com"
-    default_password = "admin"
+    # Run migrations
+    run_migrations()
 
     db = SessionLocal()
 
     try:
-        # 3️⃣ Check if admin already exists
-        existing_user = db.query(src.models.User).filter(src.models.User.username == default_username).first()
+        default_name = "Nadim Sheikh"
+        default_username = "admin"
+        default_email = "nadim.sheikh.07@gmail.com"
+        default_password = "admin"
 
-        if not existing_user:
-            hashed = bcrypt.hashpw(default_password.encode(), bcrypt.gensalt()).decode()
+        existing_user = (
+            db.query(src.models.User)
+            .filter(src.models.User.username == default_username)
+            .first()
+        )
 
-            admin_user = src.models.User(
+        if existing_user is None:
+            hashed = bcrypt.hashpw(
+                default_password.encode(),
+                bcrypt.gensalt(),
+            ).decode()
+
+            admin = src.models.User(
                 name=default_name,
                 username=default_username,
                 email=default_email,
                 password=hashed,
-                type="user",  # or "employee" if needed
+                type="user",
             )
 
-            db.add(admin_user)
+            db.add(admin)
             db.commit()
 
-            print("Default admin user created.")
+            print("✓ Default admin user created.")
+        else:
+            print("✓ Default admin already exists.")
 
     except IntegrityError:
         db.rollback()
-        print("Admin already exists or integrity error.")
+        print("✗ Integrity error while creating admin.")
 
     finally:
         db.close()
