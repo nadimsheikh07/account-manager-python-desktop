@@ -5,6 +5,7 @@ from config.db import SessionLocal
 import src.models
 import bcrypt
 from pathlib import Path
+from src.services.company_settings import ensure_default_company_settings
 
 
 def run_migrations():
@@ -25,6 +26,8 @@ def init_db():
     db = SessionLocal()
 
     try:
+        ensure_default_company_settings()
+
         default_name = "Nadim Sheikh"
         default_username = "admin"
         default_email = "nadim.sheikh.07@gmail.com"

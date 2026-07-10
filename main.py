@@ -12,6 +12,7 @@ from src.views.user.index import UserList
 from src.views.purchaseOrder.index import PurchaseOrderList
 from src.views.saleOrder.index import SaleOrderList
 from src.views.userAccount.index import UserAccountList
+from src.views.settings.index import CompanySettingsView
 from src.controllers.auth_controller import AuthController
 from config.theme import getGlobalStylesheet
 from config.app import APP_NAME
@@ -42,6 +43,7 @@ class MainApp(QWidget):
         self.sidebar.purchase_orders_clicked.connect(self.show_purchase_orders)
         self.sidebar.sale_orders_clicked.connect(self.show_sale_orders)
         self.sidebar.profit_report_clicked.connect(self.show_profit_report)
+        self.sidebar.settings_clicked.connect(self.show_settings)
         self.sidebar.logout_clicked.connect(self.handle_logout)
 
         # ================= Content =================
@@ -107,6 +109,11 @@ class MainApp(QWidget):
         from src.views.reports.profit import ProfitReport
 
         self.content_layout.addWidget(ProfitReport())
+
+    def show_settings(self):
+        self.clear_content()
+        self.sidebar.set_active("Settings")
+        self.content_layout.addWidget(CompanySettingsView())
     # ==========================================
     # Login Handling
     # ==========================================

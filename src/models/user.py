@@ -72,3 +72,18 @@ class UserAccount(Base):
     )
 
     user = relationship("User", back_populates="accounts")
+
+
+class CompanySetting(Base):
+    __tablename__ = "company_settings"
+
+    id = Column(Integer, primary_key=True)
+    company_name = Column(String, nullable=False, default="Your Company")
+    company_address = Column(Text)
+    company_registration_number = Column(String)
+    gst_number = Column(String)
+    company_logo_path = Column(String)
+    company_phone = Column(String)
+    company_email = Column(String)
+    website = Column(String)
+    date = Column(DateTime, server_default=func.now())
