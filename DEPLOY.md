@@ -1,7 +1,7 @@
 ## Install Dependencies
 
 ```bash
-pip install PySide6 pyinstaller bcrypt
+pip install PySide6 PyInstaller bcrypt
 ```
 
 ## Create Executable with PyInstaller
@@ -9,23 +9,23 @@ pip install PySide6 pyinstaller bcrypt
 Basic Build
 
 ```bash
-python -m pyinstaller --name="Khabir Hisab" --onefile --windowed app.py --icon=icon.ico
+python -m PyInstaller --name="Khabir Hisab" --onefile --windowed app.py --icon=icon.ico
 ```
 
 ## Include Database and Other Resources
 
 ```bash
-python -m pyinstaller --name="Khabir Hisab" --onefile --windowed --add-data "users.db;." --icon=icon.ico app.py
+python -m PyInstaller --name="Khabir Hisab" --onefile --windowed --add-data "users.db;." --icon=icon.ico app.py
 ```
 
 ## Clean build:
 
 ```bash
-python -m pyinstaller --name="Khabir Hisab" --clean --onefile --windowed app.py
+python -m PyInstaller --name="Khabir Hisab" --clean --onefile --windowed app.py
 ```
 
 ## Debug mode:
 
 ```bash
-python -m pyinstaller --name="Khabir Hisab" --onefile --windowed --debug app.py
+python -m PyInstaller --name="Khabir Hisab" --onefile --windowed --debug app.py
 ```
