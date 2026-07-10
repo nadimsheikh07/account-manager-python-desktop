@@ -29,7 +29,13 @@ def createPurchaseOrder(supplier_id, items):
         if item["price"] < 0:
             raise ValueError("Price must be non-negative")
 
-        total_amount += item["quantity"] * item["price"]
+        tax_percent = float(item.get("tax", 0) or 0)
+        if tax_percent < 0:
+            raise ValueError("Tax must be non-negative")
+
+        subtotal = item["quantity"] * item["price"]
+        tax_amount = subtotal * (tax_percent / 100)
+        total_amount += subtotal + tax_amount
 
     with SessionLocal() as db:
         try:
@@ -41,11 +47,13 @@ def createPurchaseOrder(supplier_id, items):
             db.flush()  # get order.id before commit
 
             for item in items:
+                tax_percent = float(item.get("tax", 0) or 0)
                 order_product = PurchaseOrderProduct(
                     purchase_order_id=order.id,
                     product_id=item["product_id"],
                     quantity=item["quantity"],
                     price=item["price"],
+                    tax=tax_percent,
                 )
                 db.add(order_product)
 

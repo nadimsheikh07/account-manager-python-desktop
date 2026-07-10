@@ -75,9 +75,14 @@ class SaleOrderForm(QWidget):
         price_input = QLineEdit()
         price_input.setPlaceholderText("Price")
 
+        tax_input = QLineEdit()
+        tax_input.setPlaceholderText("Tax (%)")
+        tax_input.setText("0")
+
         row_layout.addWidget(product_combo)
         row_layout.addWidget(qty_input)
         row_layout.addWidget(price_input)
+        row_layout.addWidget(tax_input)
 
         self.products_layout.addLayout(row_layout)
 
@@ -86,14 +91,16 @@ class SaleOrderForm(QWidget):
                 "product": product_combo,
                 "quantity": qty_input,
                 "price": price_input,
+                "tax": tax_input,
             }
         )
 
         product_combo.currentIndexChanged.connect(
-            lambda _: self.on_product_selected(product_combo, price_input)
+            lambda _: self.on_product_selected(product_combo, price_input, tax_input)
         )
         qty_input.textChanged.connect(self.calculate_total)
         price_input.textChanged.connect(self.calculate_total)
+        tax_input.textChanged.connect(self.calculate_total)
 
     def calculate_total(self):
         total = 0
@@ -101,7 +108,10 @@ class SaleOrderForm(QWidget):
             try:
                 qty = int(item["quantity"].text())
                 price = float(item["price"].text())
-                total += qty * price
+                tax_percent = float(item["tax"].text() or 0)
+                subtotal = qty * price
+                tax_amount = subtotal * (tax_percent / 100)
+                total += subtotal + tax_amount
             except:
                 continue
         self.total_label.setText(f"Total: {total:.2f}")
@@ -121,8 +131,9 @@ class SaleOrderForm(QWidget):
             try:
                 qty = int(item["quantity"].text())
                 price = float(item["price"].text())
+                tax_percent = float(item["tax"].text() or 0)
             except:
-                QMessageBox.warning(self, "Error", "Invalid quantity or price.")
+                QMessageBox.warning(self, "Error", "Invalid quantity, price, or tax.")
                 return
 
             order_items.append(
@@ -130,6 +141,7 @@ class SaleOrderForm(QWidget):
                     "product_id": product_id,
                     "quantity": qty,
                     "price": price,
+                    "tax": tax_percent,
                 }
             )
 
@@ -148,17 +160,20 @@ class SaleOrderForm(QWidget):
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to save: {str(e)}")
 
-    def on_product_selected(self, product_combo, price_input):
+    def on_product_selected(self, product_combo, price_input, tax_input):
         product_id = product_combo.currentData()
         if not product_id:
             price_input.clear()
+            tax_input.setText("0")
             self.calculate_total()
             return
 
         product = self.product_map.get(product_id)
         if product is not None:
             price_input.setText(str(product.price))
+            tax_input.setText(str(product.tax if product.tax is not None else 0))
         else:
             price_input.clear()
+            tax_input.setText("0")
 
         self.calculate_total()

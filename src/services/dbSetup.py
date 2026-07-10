@@ -11,6 +11,10 @@ def _ensure_inventory_columns():
 
     category_columns = {col["name"] for col in inspector.get_columns("categories")}
     product_columns = {col["name"] for col in inspector.get_columns("products")}
+    purchase_item_columns = {
+        col["name"] for col in inspector.get_columns("purchase_order_products")
+    }
+    sale_item_columns = {col["name"] for col in inspector.get_columns("sale_order_products")}
 
     statements = []
     if "tax" not in category_columns:
@@ -26,6 +30,14 @@ def _ensure_inventory_columns():
     if "cost" not in product_columns:
         statements.append(
             "ALTER TABLE products ADD COLUMN cost FLOAT NOT NULL DEFAULT 0.0"
+        )
+    if "tax" not in purchase_item_columns:
+        statements.append(
+            "ALTER TABLE purchase_order_products ADD COLUMN tax FLOAT NOT NULL DEFAULT 0.0"
+        )
+    if "tax" not in sale_item_columns:
+        statements.append(
+            "ALTER TABLE sale_order_products ADD COLUMN tax FLOAT NOT NULL DEFAULT 0.0"
         )
 
     if not statements:

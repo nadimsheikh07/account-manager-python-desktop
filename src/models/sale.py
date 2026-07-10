@@ -43,6 +43,7 @@ class SaleOrderProduct(Base):
 
     quantity = Column(Integer, nullable=False)
     price = Column(Float, nullable=False)
+    tax = Column(Float, nullable=False, default=0.0)
 
     __table_args__ = (
         CheckConstraint("quantity >= 0", name="check_sale_quantity"),

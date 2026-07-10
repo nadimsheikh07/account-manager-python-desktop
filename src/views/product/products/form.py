@@ -109,6 +109,7 @@ class ProductForm(QWidget):
             input_field.textChanged.connect(
                 lambda _, f=input_field, e=error_label: self.clear_error(f, e)
             )
+        self.category_combo.currentIndexChanged.connect(self.on_category_changed)
         self.category_combo.currentIndexChanged.connect(self.validate_form)
 
         self.setLayout(layout)
@@ -163,6 +164,21 @@ class ProductForm(QWidget):
             self.clear_error(self.tax_input, self.tax_error)
 
         self.save_btn.setEnabled(is_valid)
+
+    def on_category_changed(self):
+        selected_category_id = self.category_combo.currentData()
+        if not selected_category_id:
+            self.tax_input.setText("0")
+            return
+
+        for category in self.categories:
+            if category.id == selected_category_id:
+                self.tax_input.setText(
+                    str(category.tax if category.tax is not None else 0)
+                )
+                break
+
+        self.validate_form()
 
     def load_product(self):
         product = self.controller.get_product_by_id(self.product_id)
