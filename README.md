@@ -1,6 +1,22 @@
+## Create a virtual environment for your project:
+```bash
+python -m venv venv
+```
+## Activate it:
+
+### Windows
+```bash
+venv\Scripts\activate
+```
+
+### Linux/macOS
+```bash
+source venv/bin/activate
+```
+
 ## Automatically generate requirements.txt from your current environment 
 ```bash
-pip freeze > requirements.txt
+python -m pip freeze > requirements.txt
 ```
 
 
